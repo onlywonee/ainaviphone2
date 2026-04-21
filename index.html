@@ -258,6 +258,22 @@
         pointer-events: none;
       }
 
+      #app.ui-route .bottom-area {
+        max-height: 34vh;
+      }
+
+      #app.ui-select .bottom-area,
+      #app.ui-input .bottom-area,
+      #app.ui-confirm .bottom-area,
+      #app.ui-done .bottom-area {
+        max-height: 46vh;
+      }
+
+      #app .sheet-card {
+        max-height: inherit;
+        overflow-y: auto;
+      }
+
       .sheet {
         margin: 0 0 10px;
         padding: 10px 14px 0;
@@ -282,19 +298,19 @@
 
       .route-options {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         overflow-x: auto;
-        padding: 0 14px 16px;
+        padding: 0 12px 10px;
         scroll-snap-type: x mandatory;
       }
 
       .route-options::-webkit-scrollbar { display: none; }
 
       .route-card {
-        min-width: 172px;
+        min-width: 150px;
         background: #f8fafc;
-        border-radius: 22px;
-        padding: 16px;
+        border-radius: 18px;
+        padding: 12px;
         border: 2px solid transparent;
         box-shadow: inset 0 0 0 1px #edf0f5;
         scroll-snap-align: start;
@@ -335,7 +351,7 @@
       }
 
       .route-time {
-        font-size: 54px;
+        font-size: 40px;
         line-height: 1;
         font-weight: 800;
         letter-spacing: -0.04em;
@@ -350,9 +366,9 @@
 
       .sheet-actions {
         display: grid;
-        grid-template-columns: 58px 1fr;
-        gap: 12px;
-        padding: 0 14px 16px;
+        grid-template-columns: 52px 1fr;
+        gap: 10px;
+        padding: 0 12px 10px;
       }
 
       .history-btn,
@@ -372,7 +388,7 @@
       }
 
       .primary-btn {
-        min-height: 58px;
+        min-height: 50px;
         border-radius: 18px;
         background: var(--brand);
         color: #fff;
@@ -774,6 +790,18 @@
           min-height: 92px;
           font-size: 14px;
         }
+
+        #app.ui-route .bottom-area {
+          max-height: 31vh;
+        }
+
+        #app.ui-select .bottom-area,
+        #app.ui-input .bottom-area,
+        #app.ui-confirm .bottom-area,
+        #app.ui-done .bottom-area {
+          max-height: 42vh;
+        }
+
       }
 
     </style>
@@ -939,6 +967,8 @@
         attribution: '&copy; OpenStreetMap',
       }).addTo(map);
 
+      const app = document.getElementById("app");
+
       const panels = {
         route: document.getElementById("state-route"),
         select: document.getElementById("state-select"),
@@ -977,6 +1007,12 @@
         Object.entries(panels).forEach(([key, el]) => {
           el.classList.toggle("show", key === stateName);
         });
+
+        app.classList.toggle("ui-route", stateName === UI_STATE.ROUTE);
+        app.classList.toggle("ui-select", stateName === UI_STATE.SELECT);
+        app.classList.toggle("ui-input", stateName === UI_STATE.INPUT);
+        app.classList.toggle("ui-confirm", stateName === UI_STATE.CONFIRM);
+        app.classList.toggle("ui-done", stateName === UI_STATE.DONE);
 
         const dimmed = [UI_STATE.SELECT, UI_STATE.INPUT, UI_STATE.CONFIRM, UI_STATE.DONE].includes(stateName);
         mapDim.classList.toggle("active", dimmed);
