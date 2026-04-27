@@ -68,6 +68,18 @@
         filter: saturate(0.68) contrast(0.96) brightness(1.03);
       }
 
+      .brush-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        touch-action: none;
+      }
+
+      .brush-layer.active {
+        pointer-events: auto;
+      }
+
       .map-dim {
         position: absolute;
         inset: 0;
@@ -822,6 +834,7 @@
   <body>
     <main id="app">
       <div id="map"></div>
+      <div id="brushLayer" class="brush-layer hidden"></div>
       <div class="map-dim" id="mapDim"></div>
 
       <div class="top-wrap">
@@ -1010,6 +1023,7 @@
       };
 
       const helperToast = document.getElementById("helperToast");
+      const brushLayer = document.getElementById("brushLayer");
       const mapDim = document.getElementById("mapDim");
       const selectedSegmentText = document.getElementById("selectedSegmentText");
       const speechText = document.getElementById("speechText");
@@ -1060,6 +1074,9 @@
         vehiclePill.classList.toggle("hidden", stateName !== UI_STATE.ROUTE);
         const shouldShowTagButton = stateName === UI_STATE.ROUTE && Boolean(state.baseRoute?.length);
         aiTagBtn.classList.toggle("hidden", !shouldShowTagButton);
+        const brushActive = stateName === UI_STATE.ROUTE && state.personalizationMode;
+        brushLayer.classList.toggle("hidden", !brushActive);
+        brushLayer.classList.toggle("active", brushActive);
       }
 
       function toLngLat(latlng) {
@@ -1201,10 +1218,8 @@
       }
 
       function getBrushLatLng(event) {
-        if (event.latlng) return event.latlng;
-        if (event.touches?.length) return map.mouseEventToLatLng(event.touches[0]);
-        if (event.changedTouches?.length) return map.mouseEventToLatLng(event.changedTouches[0]);
-        return null;
+        const containerPoint = map.mouseEventToContainerPoint(event);
+        return map.containerPointToLatLng(containerPoint);
       }
 
       function computeBrushArea(points) {
@@ -1276,10 +1291,12 @@
 
       function startBrush(event) {
         if (!state.personalizationMode) return;
+        event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.isBrushing = true;
         state.brushLatLngs = [[latlng.lat, latlng.lng]];
+        map.dragging.disable();
         if (state.brushLine) map.removeLayer(state.brushLine);
         state.brushLine = L.polyline(state.brushLatLngs, {
           color: "#8fb7ff",
@@ -1292,6 +1309,7 @@
 
       function moveBrush(event) {
         if (!state.isBrushing) return;
+        event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.brushLatLngs.push([latlng.lat, latlng.lng]);
@@ -1305,12 +1323,11 @@
         highlightSelectionFromBrush();
       }
 
-      map.on("mousedown", startBrush);
-      map.on("mousemove", moveBrush);
-      map.on("mouseup", endBrush);
-      map.on("touchstart", startBrush);
-      map.on("touchmove", moveBrush);
-      map.on("touchend", endBrush);
+      brushLayer.addEventListener("pointerdown", startBrush);
+      brushLayer.addEventListener("pointermove", moveBrush);
+      brushLayer.addEventListener("pointerup", endBrush);
+      brushLayer.addEventListener("pointercancel", endBrush);
+      brushLayer.addEventListener("pointerleave", endBrush);
 
       function parseUserIntent(text) {
         const delayMatch = text.match(/(\d+)\s*분/);
