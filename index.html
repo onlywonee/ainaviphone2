@@ -152,6 +152,20 @@
         text-overflow: ellipsis;
       }
 
+      .search-field input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #232730;
+        font-size: inherit;
+        line-height: 1.2;
+      }
+
+      .search-field input::placeholder {
+        color: #79808e;
+      }
+
       .transport-tabs {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -816,10 +830,14 @@
           <div class="search-row">
             <button class="icon-btn" aria-label="뒤로가기">‹</button>
             <div class="search-stack">
-              <div class="search-field">서울특별시 서초구 잠원로14길 32...</div>
-              <div class="search-field">국민대학교</div>
+              <label class="search-field">
+                <input id="originInput" type="text" placeholder="내 위치를 확인 중..." readonly />
+              </label>
+              <label class="search-field">
+                <input id="destinationInput" type="text" placeholder="목적지를 입력하고 Enter" />
+              </label>
             </div>
-            <button class="swap-btn" aria-label="경로 바꾸기">⇅</button>
+            <button class="swap-btn" id="searchBtn" aria-label="목적지 검색">⌕</button>
           </div>
           <div class="transport-tabs">
             <div class="transport-tab active">🚗 16분</div>
@@ -834,7 +852,7 @@
       <div class="floating-left-tools" id="mapTools">
         <button class="tool-fab">★</button>
         <button class="tool-fab">◫</button>
-        <button class="tool-fab">⌖</button>
+        <button class="tool-fab" id="locateBtn">⌖</button>
       </div>
 
       <div class="vehicle-pill" id="vehiclePill">🚘 미등록 ˅</div>
@@ -935,8 +953,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-      const START = [37.531268, 127.008848];
-      const END = [37.61091, 126.997532];
+      const DEFAULT_FALLBACK = [37.5665, 126.978];
 
       const UI_STATE = {
         ROUTE: "route",
@@ -959,15 +976,21 @@
         taggedMarkers: [],
         activeIntent: null,
         personalizationMode: false,
+        userLocation: null,
+        destinationLocation: null,
       };
 
-      const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView([37.524, 127.024], 14);
+      const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView(DEFAULT_FALLBACK, 16);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap',
       }).addTo(map);
 
       const app = document.getElementById("app");
+      const originInput = document.getElementById("originInput");
+      const destinationInput = document.getElementById("destinationInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const locateBtn = document.getElementById("locateBtn");
 
       const panels = {
         route: document.getElementById("state-route"),
@@ -990,8 +1013,14 @@
       const mapTools = document.getElementById("mapTools");
       const vehiclePill = document.getElementById("vehiclePill");
 
+      const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
+      const routeDescEls = Array.from(document.querySelectorAll(".route-desc"));
+
       let baseLine;
       let routeHitLine;
+      let userMarker;
+      let accuracyCircle;
+      let destinationMarker;
       let lastTapTs = 0;
       let toastTimer;
 
@@ -1036,6 +1065,19 @@
         return json.routes[0];
       }
 
+      async function geocodePlace(query) {
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        if (!res.ok) throw new Error("geocode failed");
+        const rows = await res.json();
+        if (!rows.length) throw new Error("destination not found");
+        return {
+          lat: Number(rows[0].lat),
+          lng: Number(rows[0].lon),
+          label: rows[0].display_name,
+        };
+      }
+
       function nearestRouteIndex(latlng) {
         let bestIdx = 0;
         let bestDist = Infinity;
@@ -1051,11 +1093,11 @@
         return bestIdx;
       }
 
-      function addFlag(latlng, isEnd = false) {
+      function addFlag(latlng) {
         const marker = L.marker(latlng, {
           icon: L.divIcon({
             className: "",
-            html: `<div class="flag-pin">${isEnd ? "📍" : "📍"}</div>`,
+            html: '<div class="flag-pin">📍</div>',
             iconSize: [26, 26],
             iconAnchor: [13, 24],
           }),
@@ -1076,7 +1118,65 @@
       }
 
       function describeSelectedSegment(chunk) {
-        return `한남 IC 인근 구간 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
+        return `선택 구간 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
+      }
+
+      function updateRouteCards(route) {
+        const mins = Math.max(1, Math.round(route.duration / 60));
+        const km = (route.distance / 1000).toFixed(1);
+        routeTimeEls.forEach((el) => {
+          el.textContent = `${mins}분`;
+        });
+        routeDescEls.forEach((el) => {
+          el.innerHTML = `예상 소요 ${mins}분<br />${km}km · 통행료 정보 없음`;
+        });
+      }
+
+      function renderUserLocation(latlng, accuracy = 40) {
+        state.userLocation = latlng;
+        originInput.value = `내 위치 (${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)})`;
+
+        if (!userMarker) {
+          userMarker = L.circleMarker(latlng, {
+            radius: 8,
+            color: "#fff",
+            weight: 2,
+            fillColor: "#0a66ff",
+            fillOpacity: 1,
+          }).addTo(map);
+        } else {
+          userMarker.setLatLng(latlng);
+        }
+
+        if (!accuracyCircle) {
+          accuracyCircle = L.circle(latlng, {
+            radius: Math.max(20, Math.min(accuracy, 120)),
+            color: "#3e8dff",
+            fillColor: "#3e8dff",
+            fillOpacity: 0.13,
+            weight: 1,
+          }).addTo(map);
+        } else {
+          accuracyCircle.setLatLng(latlng);
+          accuracyCircle.setRadius(Math.max(20, Math.min(accuracy, 120)));
+        }
+
+        map.setView(latlng, 18, { animate: true });
+      }
+
+      function clearCurrentRoute() {
+        if (baseLine) map.removeLayer(baseLine);
+        if (routeHitLine) map.removeLayer(routeHitLine);
+        if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+        baseLine = null;
+        routeHitLine = null;
+        state.rerouteLine = null;
+        state.baseRoute = null;
+        state.destinationLocation = null;
+        if (destinationMarker) {
+          map.removeLayer(destinationMarker);
+          destinationMarker = null;
+        }
       }
 
       function highlightSelection() {
@@ -1108,6 +1208,10 @@
       }
 
       function activatePersonalizationMode() {
+        if (!state.baseRoute?.length) {
+          showToast("먼저 목적지를 검색해 경로를 만들어 주세요.", 2200);
+          return;
+        }
         state.personalizationMode = true;
         resetSelection(true);
         setUI(UI_STATE.ROUTE);
@@ -1124,38 +1228,37 @@
           }
           lastTapTs = now;
         });
-
-        map.on("click", (e) => {
-          if (!state.personalizationMode) return;
-          if (state.selectedIndexes.length >= 2) return;
-
-          const idx = nearestRouteIndex(e.latlng);
-          state.selectedIndexes.push(idx);
-          const point = state.baseRoute[idx];
-          addFlag(point, state.selectedIndexes.length === 2);
-
-          if (state.selectedIndexes.length === 1) {
-            showToast("시작점을 잡았어요. 이제 끝점을 탭하세요.", 1800);
-          } else {
-            highlightSelection();
-          }
-        });
       }
+
+      map.on("click", (e) => {
+        if (!state.personalizationMode) return;
+        if (!state.baseRoute?.length) return;
+        if (state.selectedIndexes.length >= 2) return;
+
+        const idx = nearestRouteIndex(e.latlng);
+        state.selectedIndexes.push(idx);
+        addFlag(state.baseRoute[idx]);
+
+        if (state.selectedIndexes.length === 1) {
+          showToast("시작점을 잡았어요. 이제 끝점을 탭하세요.", 1800);
+        } else {
+          highlightSelection();
+        }
+      });
 
       function parseUserIntent(text) {
         const delayMatch = text.match(/(\d+)\s*분/);
         const delay = delayMatch ? parseInt(delayMatch[1], 10) : 8;
         let reason = "혼잡 회피";
-        let action = "성수대로로 우회";
+        let action = "대체 경로로 우회";
 
         if (text.includes("냄새")) reason = "냄새/환경 회피";
         if (text.includes("막혀") || text.includes("정체") || text.includes("차막")) reason = "정체 회피";
         if (text.includes("복잡") || text.includes("골목")) reason = "복잡한 진입 회피";
         if (text.includes("큰길")) action = "큰길 위주로 우회";
-        if (text.includes("성수대로")) action = "성수대로로 우회";
 
         return {
-          destination: "국민대학교",
+          destination: destinationInput.value.trim() || "현재 목적지",
           delay,
           reason,
           action,
@@ -1164,10 +1267,10 @@
       }
 
       function renderRule(intent) {
-        summaryText.textContent = `${intent.destination} 갈 때 - 도착 시간 차이가 ${intent.delay}분 이하라면 이 구간은 피하고 ${intent.action.replace("로", "로 ")}`.replace("  ", " ") + "합니다.";
+        summaryText.textContent = `${intent.destination} 갈 때 - 도착 시간 차이가 ${intent.delay}분 이하라면 이 구간은 피하고 ${intent.action}합니다.`;
         reasonChip.textContent = intent.reason;
         delayChip.textContent = `${intent.delay}분 이하 우회 허용`;
-        ruleDetailText.textContent = `목적지가 ${intent.destination}일 때, 해당 구간의 회피 규칙을 적용합니다. 예상 도착 시간이 ${intent.delay}분 이상 차이 나면 기존 경로를 유지합니다.`;
+        ruleDetailText.textContent = `목적지가 ${intent.destination}일 때, 해당 구간 회피 규칙을 적용합니다. 예상 도착 시간이 ${intent.delay}분 이상 차이 나면 기존 경로를 유지합니다.`;
         doneText.textContent = summaryText.textContent;
       }
 
@@ -1196,10 +1299,10 @@
       }
 
       async function applyReroute() {
-        if (!state.selectedLatLngs.length) return;
+        if (!state.selectedLatLngs.length || !state.userLocation || !state.destinationLocation) return;
         const detour = calcDetourWaypoint(state.selectedLatLngs);
         try {
-          const reroute = await fetchRoute([START, detour, END]);
+          const reroute = await fetchRoute([state.userLocation, detour, state.destinationLocation]);
           const latlngs = reroute.geometry.coordinates.map((c) => [c[1], c[0]]);
           if (state.rerouteLine) map.removeLayer(state.rerouteLine);
           state.rerouteLine = L.polyline(latlngs, {
@@ -1214,11 +1317,39 @@
         }
       }
 
-      async function initializeBaseRoute() {
+      async function buildRouteFromSearch() {
+        const destinationText = destinationInput.value.trim();
+        if (!destinationText) {
+          showToast("목적지를 입력해 주세요.");
+          return;
+        }
+        if (!state.userLocation) {
+          showToast("현재 위치를 먼저 확인하고 있어요. 잠시 후 다시 시도해 주세요.", 2400);
+          return;
+        }
+
         try {
-          const route = await fetchRoute([START, END]);
+          const place = await geocodePlace(destinationText);
+          state.destinationLocation = [place.lat, place.lng];
+          destinationInput.value = destinationText;
+
+          if (destinationMarker) map.removeLayer(destinationMarker);
+          destinationMarker = L.marker(state.destinationLocation, {
+            icon: L.divIcon({
+              className: "",
+              html: '<div class="flag-pin">🏁</div>',
+              iconSize: [26, 26],
+              iconAnchor: [13, 24],
+            }),
+          }).addTo(map);
+
+          const route = await fetchRoute([state.userLocation, state.destinationLocation]);
           state.baseSeconds = route.duration;
           state.baseRoute = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+
+          if (baseLine) map.removeLayer(baseLine);
+          if (routeHitLine) map.removeLayer(routeHitLine);
+          if (state.rerouteLine) map.removeLayer(state.rerouteLine);
 
           baseLine = L.polyline(state.baseRoute, {
             color: "#0a66ff",
@@ -1233,15 +1364,45 @@
             className: "route-hit-target",
           }).addTo(map);
 
-          map.fitBounds(baseLine.getBounds(), { padding: [50, 50] });
           wireRouteInteraction(routeHitLine);
-          showToast("안내 시작 후 경로를 두 번 탭하면 구간 태깅 모드가 열립니다.", 2600);
+          updateRouteCards(route);
+          setUI(UI_STATE.ROUTE);
+          showToast("경로를 만들었습니다. 경로를 두 번 탭하면 구간 태깅이 열립니다.", 2400);
         } catch (e) {
-          showToast("경로를 불러오지 못했습니다.", 2600);
+          showToast("목적지 검색 또는 경로 생성에 실패했습니다.", 2400);
         }
       }
 
+      function requestCurrentLocation(focus = true) {
+        if (!navigator.geolocation) {
+          showToast("브라우저 위치 기능을 사용할 수 없습니다.", 2200);
+          originInput.value = "위치 권한 없음";
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const latlng = [pos.coords.latitude, pos.coords.longitude];
+            renderUserLocation(latlng, pos.coords.accuracy || 40);
+            if (!focus) {
+              map.setView(latlng, map.getZoom(), { animate: true });
+            }
+            showToast("현재 위치를 기준으로 지도를 표시합니다.", 1800);
+          },
+          () => {
+            originInput.value = "서울 시청(기본 위치)";
+            renderUserLocation(DEFAULT_FALLBACK, 80);
+            showToast("위치 권한이 없어 기본 위치로 시작합니다.", 2400);
+          },
+          { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
+        );
+      }
+
       document.getElementById("startGuideBtn").addEventListener("click", () => {
+        if (!state.baseRoute?.length) {
+          showToast("목적지를 검색해 경로를 먼저 만들어 주세요.", 2200);
+          return;
+        }
         showToast("안내를 시작합니다. 경로를 두 번 탭하면 구간 태깅 모드가 열립니다.", 2600);
       });
 
@@ -1323,8 +1484,22 @@
         recognition.start();
       });
 
+      searchBtn.addEventListener("click", buildRouteFromSearch);
+      destinationInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          buildRouteFromSearch();
+        }
+      });
+
+      locateBtn.addEventListener("click", () => {
+        requestCurrentLocation(true);
+      });
+
       setUI(UI_STATE.ROUTE);
-      initializeBaseRoute();
+      clearCurrentRoute();
+      requestCurrentLocation(true);
+      showToast("현재 위치를 불러왔어요. 목적지를 입력해 내비를 시작하세요.", 2600);
     </script>
   </body>
 </html>
