@@ -1529,7 +1529,13 @@
       setUI(UI_STATE.ROUTE);
       clearCurrentRoute();
       requestCurrentLocation(true);
-      showToast("현재 위치를 불러왔어요. 목적지 검색 후 우측 AI 버튼으로 태깅을 시작하세요.", 2800);
+      showToast("현재 위치를 불러왔어요. 목적지 검색 후 우측 AI 버튼으로 태깅을 시작���세요.", 2800);
     </script>
+
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
   </body>
 </html>
