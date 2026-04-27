@@ -1,0 +1,13 @@
+{
+  "name": "ainaviphone2",
+  "version": "1.0.0",
+  "description": "아이폰 16용 구간 태깅 내비게이션 프로토타입",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build step needed for static HTML'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.0.0"
+  }
+}
