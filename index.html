@@ -919,14 +919,17 @@
             </div>
 
             <div class="state-panel" id="state-input">
-              <h3 class="sheet-title">AI가 구간 태깅을 정리하고 있어요...</h3>
-              <p class="sheet-sub">이 구간을 왜 피하거나 선호하는지 자연스럽게 말해 주세요. 예: “국민대 갈 때는 8분 이상 차이 안 나면 여기 말고 성수대로로 가.”</p>
+              <h3 class="sheet-title">어떤 상황에서 이 길로 안내해 드릴까요?</h3>
+              <p class="sheet-sub">시간 차이, 도로 상태, 주변 시설 등 당신만의 주행 기준을 자유롭게 말씀해 주세요.</p>
               <div class="voice-zone">
                 <button class="voice-button" id="voiceBtn">🎤</button>
               </div>
               <div class="textarea-wrap">
-                <textarea id="speechText" placeholder="여기에 음성 인식 결과 또는 직접 입력한 문장이 들어갑니다."></textarea>
+                <textarea id="speechText" placeholder="(예시) 8분 이상 차이 안 나면, 운전하기 편한 성수대교 쪽으로 갈래"></textarea>
               </div>
+              <p class="sheet-sub" id="conditionExamples" style="margin-top:-6px; margin-bottom:12px; font-size:14px;">
+                예시: “도착 시간이 5분 이내로 차이 나면, 신호 적고 시원하게 달리는 이 길로 갈래.”
+              </p>
               <div class="dual-actions">
                 <button class="inline-btn" id="inputBackBtn">이전</button>
                 <button class="primary-btn" id="parseBtn">AI 요약 보기</button>
@@ -1027,6 +1030,7 @@
       const mapDim = document.getElementById("mapDim");
       const selectedSegmentText = document.getElementById("selectedSegmentText");
       const speechText = document.getElementById("speechText");
+      const conditionExamples = document.getElementById("conditionExamples");
       const summaryText = document.getElementById("summaryText");
       const reasonChip = document.getElementById("reasonChip");
       const delayChip = document.getElementById("delayChip");
@@ -1040,6 +1044,12 @@
 
       const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
       const routeDescEls = Array.from(document.querySelectorAll(".route-desc"));
+      const conditionalExamples = [
+        "예시: “도착 시간이 5분 이내로 차이 나면, 신호 적고 시원하게 달리는 이 길로 갈래.”",
+        "예시: “낮에는 풍경이 예쁜 강변길이 좋아. 밤에는 가로등 많은 큰길로 안내해줘.”",
+        "예시: “출근길엔 커피 사기 편하게 드라이브 스루 있는 길이 좋아.”",
+        "예시: “10분 더 걸려도 괜찮아. 길이 좁고 복잡한 골목은 피해서 알려줘.”",
+      ];
 
       let baseLine;
       let routeHitLine;
@@ -1047,6 +1057,8 @@
       let accuracyCircle;
       let destinationMarker;
       let toastTimer;
+      let conditionExampleIdx = 0;
+      let conditionExampleTimer = null;
 
       function showToast(message, time = 1800) {
         helperToast.textContent = message;
@@ -1497,6 +1509,15 @@
         preferModeBtn.classList.toggle("inline-btn", avoidActive);
       }
 
+      function cycleConditionExamples() {
+        if (!conditionExamples) return;
+        clearInterval(conditionExampleTimer);
+        conditionExampleTimer = setInterval(() => {
+          conditionExampleIdx = (conditionExampleIdx + 1) % conditionalExamples.length;
+          conditionExamples.textContent = conditionalExamples[conditionExampleIdx];
+        }, 2600);
+      }
+
       document.getElementById("startGuideBtn").addEventListener("click", () => {
         if (!state.baseRoute?.length) {
           showToast("목적지를 검색해 경로를 먼저 만들어 주세요.", 2200);
@@ -1615,6 +1636,7 @@
       });
 
       setUI(UI_STATE.ROUTE);
+      cycleConditionExamples();
       updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
