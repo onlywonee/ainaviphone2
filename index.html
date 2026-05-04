@@ -258,11 +258,44 @@
       }
 
       .ai-tool {
-        background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e9f1ff 35%, #0a66ff 100%);
-        color: #0a66ff;
-        font-size: 15px;
+        background:
+          radial-gradient(circle at 30% 28%, #ffffff 0%, #f9fdff 40%, #edf3ff 100%);
+        color: #1358e8;
+        font-size: 14px;
         font-weight: 900;
-        letter-spacing: 0.01em;
+        letter-spacing: 0.02em;
+        box-shadow:
+          0 8px 20px rgba(8, 33, 84, 0.18),
+          inset 0 0 0 1px rgba(132, 166, 255, 0.28);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .ai-tool::before {
+        content: "";
+        position: absolute;
+        inset: -20% -10%;
+        background: conic-gradient(
+          from 140deg,
+          rgba(65, 140, 255, 0.4),
+          rgba(173, 255, 109, 0.42),
+          rgba(252, 226, 86, 0.4),
+          rgba(65, 140, 255, 0.35)
+        );
+        filter: blur(16px);
+        opacity: 0.45;
+        animation: aiAura 3.1s linear infinite;
+      }
+
+      .ai-tool .ai-text {
+        position: relative;
+        z-index: 1;
+        font-weight: 900;
+        background: linear-gradient(92deg, #0c67ff 0%, #65c1ff 38%, #d6ff64 70%, #ffd74a 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: aiTextPulse 1.8s ease-in-out infinite;
       }
 
       .bottom-area {
@@ -645,6 +678,22 @@
         50% { stroke-opacity: 0.68; }
       }
 
+      @keyframes aiAura {
+        from { transform: rotate(0deg) scale(1); }
+        to { transform: rotate(360deg) scale(1.03); }
+      }
+
+      @keyframes aiTextPulse {
+        0%, 100% {
+          filter: drop-shadow(0 0 0 rgba(104, 203, 255, 0));
+          opacity: 0.92;
+        }
+        50% {
+          filter: drop-shadow(0 0 8px rgba(111, 220, 255, 0.78));
+          opacity: 1;
+        }
+      }
+
       /* Small-phone responsive tune (iPhone viewport ratio) */
       @media (max-width: 430px), (max-height: 820px) {
         .top-wrap {
@@ -865,7 +914,9 @@
       </div>
 
       <div class="floating-left-tools" id="mapTools">
-        <button class="tool-fab ai-tool hidden" id="aiTagBtn">🌀AI</button>
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 개인화 모드">
+          <span class="ai-text">AI</span>
+        </button>
         <button class="tool-fab">★</button>
       </div>
 
