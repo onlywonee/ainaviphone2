@@ -120,6 +120,7 @@
       }
 
       .simple-search {
+        width: 100%;
         min-height: 52px;
         border-radius: 999px;
         background:
@@ -1098,6 +1099,7 @@
       const quickSearchInput = document.getElementById("quickSearchInput");
       const detailedSearchRow = document.getElementById("detailedSearchRow");
       const transportTabs = document.getElementById("transportTabs");
+      const bottomArea = document.querySelector(".bottom-area");
       const originInput = document.getElementById("originInput");
       const destinationInput = document.getElementById("destinationInput");
       const searchBtn = document.getElementById("searchBtn");
@@ -1149,6 +1151,7 @@
         openSearchBtn.classList.toggle("hidden", hasRoute);
         detailedSearchRow.classList.toggle("hidden", !hasRoute);
         transportTabs.classList.toggle("hidden", !hasRoute);
+        bottomArea.classList.toggle("hidden", !hasRoute);
       }
 
       function showToast(message, time = 1800) {
