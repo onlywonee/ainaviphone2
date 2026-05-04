@@ -257,26 +257,12 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
       }
 
-      .ai-tag-fab {
-        position: absolute;
-        right: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 290px);
-        z-index: 25;
-        width: 64px;
-        height: 64px;
-        border: none;
-        border-radius: 50%;
+      .ai-tool {
         background: radial-gradient(circle at 35% 30%, #ffffff 0%, #e9f1ff 35%, #0a66ff 100%);
         color: #0a66ff;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 900;
         letter-spacing: 0.01em;
-        box-shadow: 0 10px 26px rgba(10, 102, 255, 0.36);
-        cursor: pointer;
-      }
-
-      .ai-tag-fab.hidden {
-        display: none;
       }
 
       .bottom-area {
@@ -729,12 +715,8 @@
           border-radius: 14px;
         }
 
-        .ai-tag-fab {
-          right: 10px;
-          bottom: calc(env(safe-area-inset-bottom) + 244px);
-          width: 52px;
-          height: 52px;
-          font-size: 12px;
+        .ai-tool {
+          font-size: 13px;
         }
 
         .helper-toast {
@@ -883,13 +865,11 @@
       </div>
 
       <div class="floating-left-tools" id="mapTools">
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn">🌀AI</button>
         <button class="tool-fab">★</button>
-        <button class="tool-fab">◫</button>
-        <button class="tool-fab" id="locateBtn">⌖</button>
       </div>
 
       <div class="vehicle-pill" id="vehiclePill">🚘 미등록 ˅</div>
-      <button class="ai-tag-fab hidden" id="aiTagBtn">🌀AI</button>
 
       <div class="helper-toast" id="helperToast"></div>
 
@@ -1040,7 +1020,6 @@
       const originInput = document.getElementById("originInput");
       const destinationInput = document.getElementById("destinationInput");
       const searchBtn = document.getElementById("searchBtn");
-      const locateBtn = document.getElementById("locateBtn");
 
       const panels = {
         route: document.getElementById("state-route"),
@@ -1681,10 +1660,6 @@
         }
       });
 
-      locateBtn.addEventListener("click", () => {
-        requestCurrentLocation(true);
-      });
-
       aiTagBtn.addEventListener("click", () => {
         activatePersonalizationMode();
       });
@@ -1694,7 +1669,7 @@
       updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
-      showToast("현재 위치를 불러왔어요. 목적지 검색 후 우측 AI 버튼으로 태깅을 시작하세요.", 2800);
+      showToast("현재 위치를 불러왔어요. 목적지 검색 후 좌측 AI 버튼으로 태깅을 시작하세요.", 2800);
     </script>
   </body>
 </html>
