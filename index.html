@@ -690,6 +690,45 @@
         opacity: 1;
       }
 
+      .ai-intro-bubble {
+        position: absolute;
+        left: 22px;
+        bottom: calc(100% + 10px);
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #6458ff 0%, #2f73ff 100%);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        box-shadow: 0 10px 22px rgba(33, 56, 125, 0.32);
+      }
+
+      .ai-intro-bubble::after {
+        content: "";
+        position: absolute;
+        left: 26px;
+        bottom: -8px;
+        width: 14px;
+        height: 14px;
+        background: #2f73ff;
+        transform: rotate(45deg);
+        border-radius: 2px;
+      }
+
+      .ai-intro-close {
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 21px;
+        line-height: 1;
+        padding: 0;
+        cursor: pointer;
+      }
+
       .hidden { display: none !important; }
 
       .leaflet-control-zoom {
@@ -1007,6 +1046,10 @@
       </section>
 
       <div class="bottom-area">
+        <div class="ai-intro-bubble hidden" id="aiIntroBubble">
+          <span>좌측 AI 버튼으로 구간 태깅 시작</span>
+          <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
+        </div>
         <section class="sheet">
           <div class="sheet-card">
             <div class="sheet-handle"></div>
@@ -1201,6 +1244,8 @@
       const bottomNav = document.querySelector(".bottom-nav");
       const avoidModeBtn = document.getElementById("avoidModeBtn");
       const preferModeBtn = document.getElementById("preferModeBtn");
+      const aiIntroBubble = document.getElementById("aiIntroBubble");
+      const aiIntroCloseBtn = document.getElementById("aiIntroCloseBtn");
 
       const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
       const routeDescEls = Array.from(document.querySelectorAll(".route-desc"));
@@ -1266,7 +1311,7 @@
         aiTagBtn.classList.toggle("hidden", !shouldShowTagButton);
         if (shouldShowTagButton && !state.aiFirstTipShown) {
           state.aiFirstTipShown = true;
-          showToast("좌측 AI 버튼을 눌러 구간 태깅을 시작해 보세요.", 2600);
+          aiIntroBubble.classList.remove("hidden");
         }
         const brushActive = stateName === UI_STATE.ROUTE && state.personalizationMode;
         brushLayer.classList.toggle("hidden", !brushActive);
@@ -1892,7 +1937,11 @@
       });
 
       aiTagBtn.addEventListener("click", () => {
+        aiIntroBubble.classList.add("hidden");
         activatePersonalizationMode();
+      });
+      aiIntroCloseBtn.addEventListener("click", () => {
+        aiIntroBubble.classList.add("hidden");
       });
       myTagNavBtn.addEventListener("click", () => {
         if (!state.baseRoute?.length) {
