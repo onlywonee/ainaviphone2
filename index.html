@@ -76,7 +76,7 @@
         inset: 0;
         z-index: 3;
         pointer-events: none;
-        touch-action: none;
+        touch-action: pinch-zoom;
       }
 
       .brush-layer.active {
@@ -1018,6 +1018,7 @@
         selectedRadiusM: 0,
         tagMode: "avoid",
         isBrushing: false,
+        pinchPassThrough: false,
       };
 
       const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView(DEFAULT_FALLBACK, 16);
@@ -1318,12 +1319,16 @@
 
       function startBrush(event) {
         if (!state.personalizationMode) return;
+        if (event.touches && event.touches.length > 1) {
+          state.pinchPassThrough = true;
+          brushLayer.classList.remove("active");
+          return;
+        }
         event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.isBrushing = true;
         state.brushLatLngs = [[latlng.lat, latlng.lng]];
-        map.dragging.disable();
         if (state.brushLine) map.removeLayer(state.brushLine);
         state.brushLine = L.polyline(state.brushLatLngs, {
           color: "#8fb7ff",
@@ -1336,6 +1341,7 @@
 
       function moveBrush(event) {
         if (!state.isBrushing) return;
+        if (event.touches && event.touches.length > 1) return;
         event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
@@ -1346,15 +1352,30 @@
       function endBrush() {
         if (!state.isBrushing) return;
         state.isBrushing = false;
-        map.dragging.enable();
         highlightSelectionFromBrush();
       }
 
-      brushLayer.addEventListener("pointerdown", startBrush);
-      brushLayer.addEventListener("pointermove", moveBrush);
-      brushLayer.addEventListener("pointerup", endBrush);
-      brushLayer.addEventListener("pointercancel", endBrush);
-      brushLayer.addEventListener("pointerleave", endBrush);
+      function restoreBrushLayerIfNeeded(event) {
+        if (!state.personalizationMode) return;
+        if (event.touches && event.touches.length === 0) {
+          state.pinchPassThrough = false;
+          brushLayer.classList.add("active");
+        }
+      }
+
+      brushLayer.addEventListener("touchstart", startBrush, { passive: false });
+      brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
+      brushLayer.addEventListener("touchend", (event) => {
+        endBrush();
+        restoreBrushLayerIfNeeded(event);
+      }, { passive: false });
+      brushLayer.addEventListener("touchcancel", (event) => {
+        endBrush();
+        restoreBrushLayerIfNeeded(event);
+      }, { passive: false });
+      brushLayer.addEventListener("mousedown", startBrush);
+      brushLayer.addEventListener("mousemove", moveBrush);
+      window.addEventListener("mouseup", endBrush);
 
       function parseUserIntent(text) {
         const delayMatch = text.match(/(\d+)\s*분/);
