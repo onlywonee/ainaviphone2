@@ -970,7 +970,7 @@
             <button class="simple-icon-btn hidden" id="simpleSearchBtn" aria-label="검색">⌕</button>
           </div>
           <div class="search-row hidden" id="detailedSearchRow">
-            <button class="icon-btn" aria-label="뒤로가기">‹</button>
+            <button class="icon-btn" id="routeBackBtn" aria-label="뒤로가기">‹</button>
             <div class="search-stack">
               <label class="search-field">
                 <input id="originInput" type="text" placeholder="내 위치를 확인 중..." readonly />
@@ -1015,7 +1015,7 @@
               <div class="route-options">
                 <article class="route-card active">
                   <div class="route-top">
-                    <div class="route-title">추천 경로</div>
+                    <div class="route-title" id="primaryRouteTitle">추천 경로</div>
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">16분</div>
@@ -1023,7 +1023,7 @@
                 </article>
                 <article class="route-card">
                   <div class="route-top">
-                    <div class="route-title" style="color:#707784">무료도로 우선</div>
+                    <div class="route-title" id="secondaryRouteTitle" style="color:#707784">최적 도로</div>
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">16분</div>
@@ -1189,6 +1189,9 @@
       const delayChip = document.getElementById("delayChip");
       const ruleDetailText = document.getElementById("ruleDetailText");
       const doneText = document.getElementById("doneText");
+      const routeBackBtn = document.getElementById("routeBackBtn");
+      const primaryRouteTitle = document.getElementById("primaryRouteTitle");
+      const secondaryRouteTitle = document.getElementById("secondaryRouteTitle");
       const mapTools = document.getElementById("mapTools");
       const aiTagBtn = document.getElementById("aiTagBtn");
       const myTagNavBtn = document.getElementById("myTagNavBtn");
@@ -1357,6 +1360,12 @@
         });
       }
 
+      function updateRouteTitleOrder() {
+        const hasTaggedReroute = Boolean(state.rerouteLine && state.activeIntent);
+        primaryRouteTitle.textContent = hasTaggedReroute ? "태깅 반영 도로" : "추천 경로";
+        secondaryRouteTitle.textContent = "최적 도로";
+      }
+
       function renderUserLocation(latlng, accuracy = 40) {
         state.userLocation = latlng;
         originInput.value = `내 위치 (${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)})`;
@@ -1398,6 +1407,8 @@
         state.rerouteLine = null;
         state.baseRoute = null;
         state.destinationLocation = null;
+        state.activeIntent = null;
+        updateRouteTitleOrder();
         if (destinationMarker) {
           map.removeLayer(destinationMarker);
           destinationMarker = null;
@@ -1575,6 +1586,9 @@
       }
 
       function addTaggedMarker(midpoint) {
+        const summary = state.activeIntent
+          ? `${state.activeIntent.destination} · ${state.activeIntent.delay}분 기준 · ${state.tagMode === "prefer" ? "선호" : "회피"}`
+          : "저장된 태깅 규칙";
         const marker = L.marker(midpoint, {
           icon: L.divIcon({
             className: "",
@@ -1583,6 +1597,13 @@
             iconAnchor: [16, 16],
           }),
         }).addTo(map);
+        marker.bindTooltip(summary, {
+          direction: "right",
+          offset: [12, 0],
+          opacity: 0.96,
+          className: "segment-label",
+        });
+        marker.on("click", () => marker.openTooltip());
         state.taggedMarkers.push(marker);
       }
 
@@ -1613,6 +1634,7 @@
             opacity: 0.92,
             className: "reroute-line",
           }).addTo(map);
+          updateRouteTitleOrder();
           showToast(state.tagMode === "prefer" ? "선호 구간을 반영한 경로를 표시했어요." : "회피 구간을 반영한 우회 경로를 표시했어요.", 2200);
         } catch (e) {
           showToast("개인화 경로 계산에 실패했어요. 기본 경로를 유지합니다.", 2200);
@@ -1778,7 +1800,16 @@
         resetSelection();
         map.dragging.enable();
         speechText.value = "";
-        state.activeIntent = null;
+      });
+
+      routeBackBtn.addEventListener("click", () => {
+        clearCurrentRoute();
+        resetSelection();
+        setRouteStage(false);
+        setUI(UI_STATE.ROUTE);
+        searchOverlay.classList.remove("hidden");
+        destinationInput.value = "";
+        showToast("홈 화면으로 돌아왔어요.");
       });
 
       avoidModeBtn.addEventListener("click", () => {
@@ -1873,6 +1904,7 @@
       updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
+      updateRouteTitleOrder();
       showToast("현재 위치를 불러왔어요. 목적지 검색 후 좌측 AI 버튼으로 태깅을 시작하세요.", 2800);
     </script>
   </body>
