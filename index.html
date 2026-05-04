@@ -1246,7 +1246,8 @@
       }
 
       function getBrushLatLng(event) {
-        const containerPoint = map.mouseEventToContainerPoint(event);
+        const sourcePoint = event.touches?.[0] || event.changedTouches?.[0] || event;
+        const containerPoint = map.mouseEventToContainerPoint(sourcePoint);
         return map.containerPointToLatLng(containerPoint);
       }
 
@@ -1341,7 +1342,12 @@
 
       function moveBrush(event) {
         if (!state.isBrushing) return;
-        if (event.touches && event.touches.length > 1) return;
+        if (event.touches && event.touches.length > 1) {
+          state.isBrushing = false;
+          state.pinchPassThrough = true;
+          brushLayer.classList.remove("active");
+          return;
+        }
         event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
@@ -1357,7 +1363,8 @@
 
       function restoreBrushLayerIfNeeded(event) {
         if (!state.personalizationMode) return;
-        if (event.touches && event.touches.length === 0) {
+        const touches = event.touches ? event.touches.length : 0;
+        if (touches < 2) {
           state.pinchPassThrough = false;
           brushLayer.classList.add("active");
         }
@@ -1376,6 +1383,8 @@
       brushLayer.addEventListener("mousedown", startBrush);
       brushLayer.addEventListener("mousemove", moveBrush);
       window.addEventListener("mouseup", endBrush);
+      window.addEventListener("touchend", restoreBrushLayerIfNeeded, { passive: true });
+      window.addEventListener("touchcancel", restoreBrushLayerIfNeeded, { passive: true });
 
       function parseUserIntent(text) {
         const delayMatch = text.match(/(\d+)\s*분/);
