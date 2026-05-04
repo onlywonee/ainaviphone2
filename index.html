@@ -1,0 +1,1879 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <title>아이폰 16용 구간 태깅 내비게이션 프로토타입</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0c1018;
+        --panel: rgba(248, 249, 252, 0.96);
+        --panel-dark: rgba(10, 14, 23, 0.76);
+        --line: rgba(255, 255, 255, 0.12);
+        --brand: #0a66ff;
+        --brand-soft: rgba(10, 102, 255, 0.14);
+        --text: #1f232b;
+        --text-dark: #f4f7fd;
+        --muted: #6c7482;
+        --muted-dark: #b9c2d0;
+        --route-blue: #0a66ff;
+        --route-green: #21c16b;
+        --route-pink: #ef5da8;
+        --danger: #ff5b5b;
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        font-family: "Pretendard", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+        overflow-x: clip;
+      }
+
+      body {
+        color: var(--text-dark);
+      }
+
+      #app {
+        position: relative;
+        width: 100%;
+        height: 100dvh;
+        min-height: 100svh;
+        overflow: hidden;
+        overflow-x: clip;
+        background: #0f1521;
+      }
+
+      #map {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        filter: saturate(0.68) contrast(0.96) brightness(1.03);
+      }
+
+      .brush-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        touch-action: pinch-zoom;
+      }
+
+      .brush-layer.active {
+        pointer-events: auto;
+      }
+
+      .map-dim {
+        position: absolute;
+        inset: 0;
+        background: rgba(10, 12, 18, 0.05);
+        pointer-events: none;
+        z-index: 2;
+        transition: background 0.25s ease;
+      }
+
+      .map-dim.active {
+        background: rgba(10, 12, 18, 0.24);
+        backdrop-filter: blur(2px);
+      }
+
+      .top-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        z-index: 30;
+        padding: calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 18px) 0 calc(env(safe-area-inset-left) + 14px);
+        pointer-events: none;
+      }
+
+      .route-bar {
+        background: rgba(246, 248, 251, 0.97);
+        border-radius: 24px;
+        border: 1px solid #d9dee7;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        color: #141821;
+        padding: 14px 14px 12px;
+        pointer-events: auto;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .simple-search {
+        width: 100%;
+        min-height: 52px;
+        border-radius: 999px;
+        background:
+          linear-gradient(#fff, #fff) padding-box,
+          linear-gradient(92deg, #d657ff 0%, #3bc3ff 100%) border-box;
+        border: 2px solid transparent;
+        display: grid;
+        grid-template-columns: 30px 1fr 28px 28px;
+        gap: 10px;
+        align-items: center;
+        padding: 0 16px;
+        font-size: 16px;
+        color: #a0a8b5;
+        font-weight: 700;
+      }
+
+      .simple-search input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 16px;
+        color: #171c24;
+        font-weight: 700;
+      }
+
+      .simple-icon-btn {
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        color: #788291;
+        padding: 0;
+      }
+
+      .search-overlay {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        top: calc(env(safe-area-inset-top) + 94px);
+        z-index: 32;
+        background: rgba(252, 253, 255, 0.98);
+        border-radius: 22px;
+        box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
+        padding: 12px;
+      }
+
+      .search-overlay.hidden { display: none; }
+
+      .recent-title { font-size: 14px; color: #727b88; margin: 10px 4px 8px; font-weight: 700; }
+      .recent-item {
+        width: 100%;
+        border: none;
+        background: #f2f5f9;
+        border-radius: 14px;
+        min-height: 44px;
+        text-align: left;
+        padding: 0 12px;
+        margin-bottom: 8px;
+        color: #2b313c;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .search-row {
+        display: grid;
+        grid-template-columns: 36px 1fr 28px;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        color: #161a22;
+        cursor: pointer;
+      }
+
+      .swap-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+        border: none;
+        background: transparent;
+        font-size: 20px;
+        color: #161a22;
+        cursor: pointer;
+      }
+
+      .search-stack {
+        display: grid;
+        gap: 8px;
+      }
+
+      .search-field {
+        background: #e9edf3;
+        min-height: 46px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        font-size: 15px;
+        color: #232730;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .search-field input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #232730;
+        font-size: inherit;
+        line-height: 1.2;
+      }
+
+      .search-field input::placeholder {
+        color: #79808e;
+      }
+
+      .transport-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 10px 0;
+      }
+
+      .transport-tab {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 42px;
+        border-radius: 999px;
+        color: #11161e;
+        font-size: 15px;
+        font-weight: 700;
+        position: relative;
+      }
+
+      .transport-tab.active {
+        background: #e7efff;
+        color: #1f66e9;
+        box-shadow: inset 0 0 0 1px rgba(40, 98, 240, 0.25);
+      }
+
+      .transport-tab .tiny {
+        position: absolute;
+        top: 2px;
+        right: 18px;
+        font-size: 11px;
+        color: #f45a45;
+      }
+
+      .floating-left-tools {
+        position: absolute;
+        left: 16px;
+        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        z-index: 24;
+        display: grid;
+        gap: 12px;
+      }
+
+      .tool-fab {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: 1px solid rgba(37, 48, 69, 0.08);
+        background: #fff;
+        box-shadow: 0 8px 18px rgba(22, 32, 51, 0.14);
+        font-size: 26px;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+
+
+      .ai-tool {
+        background: #fff;
+        color: #1358e8;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        box-shadow: 0 8px 18px rgba(22, 32, 51, 0.14);
+        position: relative;
+        border: 1px solid rgba(37, 48, 69, 0.08);
+      }
+
+      .ai-tool .ai-text {
+        position: relative;
+        z-index: 1;
+        font-weight: 900;
+        background: linear-gradient(180deg, #0bc7bd 0%, #1168ff 46%, #d84fff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 23px;
+        letter-spacing: -0.01em;
+        line-height: 1;
+      }
+
+      .bottom-area {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        padding: 0 calc(env(safe-area-inset-right) + 8px) calc(env(safe-area-inset-bottom) + 10px) calc(env(safe-area-inset-left) + 4px);
+        pointer-events: none;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 70;
+        background: rgba(255, 255, 255, 0.98);
+        border-top: 1px solid #e4e9f1;
+        padding: 8px 8px calc(env(safe-area-inset-bottom) + 10px);
+      }
+      .bottom-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        text-align: center;
+      }
+      .nav-item {
+        border: none;
+        background: transparent;
+        color: #1f2530;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .nav-item .emo { display:block; font-size: 27px; margin-bottom: 2px; }
+
+      .tag-list-sheet {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        bottom: calc(env(safe-area-inset-bottom) + 86px);
+        z-index: 69;
+        background: rgba(251, 252, 255, 0.98);
+        border-radius: 16px;
+        border: 1px solid #e1e6ef;
+        max-height: 36vh;
+        overflow: auto;
+        padding: 10px;
+      }
+
+      #app.ui-route .bottom-area {
+        max-height: 34vh;
+      }
+
+      #app.ui-select .bottom-area,
+      #app.ui-confirm .bottom-area,
+      #app.ui-done .bottom-area {
+        max-height: 50vh;
+      }
+
+      #app.ui-input .bottom-area {
+        max-height: 64vh;
+      }
+
+      #app .sheet-card {
+        max-height: inherit;
+        overflow-y: auto;
+      }
+
+      .sheet {
+        margin: 0 0 10px;
+        padding: 10px 14px 0;
+        pointer-events: auto;
+        width: 100%;
+      }
+
+      .sheet-card {
+        background: rgba(251, 252, 254, 0.98);
+        color: var(--text);
+        border-radius: 28px 28px 0 0;
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .sheet-handle {
+        width: 42px;
+        height: 5px;
+        border-radius: 999px;
+        background: #d1d7e0;
+        margin: 10px auto 10px;
+      }
+
+      .route-options {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 0 12px 10px;
+        scroll-snap-type: x mandatory;
+      }
+
+      .route-options::-webkit-scrollbar { display: none; }
+
+      .route-card {
+        min-width: 144px;
+        background: #f8fafe;
+        border-radius: 24px;
+        padding: 10px;
+        border: 2px solid transparent;
+        box-shadow: inset 0 0 0 1px #e6ebf2;
+        scroll-snap-align: start;
+      }
+
+      .route-card.active {
+        border-color: #2e73f0;
+        box-shadow: 0 1px 0 rgba(46, 115, 240, 0.08), inset 0 0 0 1px rgba(46, 115, 240, 0.08);
+      }
+
+      .route-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+        min-width: 0;
+      }
+
+      .route-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--brand);
+        font-size: 15px;
+        font-weight: 800;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        flex: 1;
+        word-break: keep-all;
+      }
+
+      .small-btn {
+        border: 1px solid #ccd3de;
+        background: #f3f6fb;
+        border-radius: 16px;
+        min-width: 52px;
+        height: 38px;
+        font-size: 15px;
+        color: #687080;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .route-time {
+        font-size: 34px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 10px;
+      }
+
+      .route-desc {
+        font-size: 14px;
+        line-height: 1.4;
+        color: #3f4550;
+      }
+
+      .sheet-actions {
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        gap: 10px;
+        padding: 0 12px 10px;
+      }
+
+      .history-btn,
+      .primary-btn,
+      .secondary-btn,
+      .inline-btn {
+        border: none;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .history-btn {
+        border-radius: 18px;
+        background: #d9dde5;
+        color: #fff;
+        font-size: 28px;
+      }
+
+      .primary-btn {
+        min-height: 50px;
+        border-radius: 18px;
+        background: var(--brand);
+        color: #fff;
+        font-size: 18px;
+        box-shadow: 0 12px 20px rgba(10, 102, 255, 0.24);
+      }
+
+      .secondary-btn {
+        min-height: 52px;
+        border-radius: 16px;
+        background: #eef3ff;
+        color: var(--brand);
+        font-size: 17px;
+      }
+
+      .inline-btn {
+        min-height: 52px;
+        border-radius: 16px;
+        background: #eff2f7;
+        color: #252a33;
+        font-size: 17px;
+      }
+
+      .state-panel {
+        display: none;
+        padding: 0 18px 18px;
+      }
+
+      .state-panel.show {
+        display: block;
+      }
+
+      #state-input .dual-actions {
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(to top, rgba(251, 252, 254, 0.98) 75%, rgba(251, 252, 254, 0));
+        padding-top: 10px;
+      }
+
+      .sheet-title {
+        font-size: 22px;
+        line-height: 1.34;
+        font-weight: 800;
+        color: #21252d;
+        letter-spacing: -0.03em;
+        margin: 0 0 8px;
+      }
+
+      .sheet-sub {
+        font-size: 16px;
+        line-height: 1.58;
+        color: #5d6572;
+        margin: 0 0 16px;
+      }
+
+      .guide-card {
+        background: #f6f8fb;
+        border-radius: 18px;
+        padding: 14px;
+        margin-bottom: 14px;
+        border: 1px solid #edf1f5;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .info-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 12px;
+        background: #eef3ff;
+        border-radius: 999px;
+        color: var(--brand);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .textarea-wrap {
+        background: #f7f8fb;
+        border-radius: 18px;
+        padding: 12px;
+        border: 1px solid #e6eaf0;
+        margin-bottom: 14px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 88px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #20242b;
+        resize: none;
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .voice-zone {
+        display: grid;
+        place-items: center;
+        padding: 10px 0 18px;
+      }
+
+      .voice-button {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        border: none;
+        background: radial-gradient(circle at 50% 35%, #ffffff 0%, #edf4ff 40%, #dfeaff 100%);
+        box-shadow: 0 0 0 16px rgba(10, 102, 255, 0.08);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      .voice-icon {
+        width: 44px;
+        height: 44px;
+        color: #2f6df5;
+      }
+
+      .dual-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .completion-card {
+        text-align: center;
+        padding-top: 4px;
+      }
+
+      .completion-icon {
+        font-size: 46px;
+        color: var(--brand);
+        margin-bottom: 10px;
+      }
+
+      .helper-toast {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(env(safe-area-inset-bottom) + 280px);
+        z-index: 50;
+        background: rgba(24, 28, 36, 0.9);
+        color: #fff;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-size: 14px;
+        line-height: 1.4;
+        max-width: calc(100vw - 40px);
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .helper-toast.show {
+        opacity: 1;
+      }
+
+      .hidden { display: none !important; }
+
+      .leaflet-control-zoom {
+        display: none;
+      }
+
+      .segment-label {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 999px;
+        color: #151922;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+        white-space: nowrap;
+      }
+
+      .tag-pin {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(160deg, #ff7ad9 0%, #d85bff 100%);
+        border: 2px solid rgba(255, 255, 255, 0.95);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.01em;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.32), 0 8px 18px rgba(172, 68, 194, 0.36);
+      }
+
+      .flag-pin {
+        font-size: 24px;
+        filter: drop-shadow(0 6px 10px rgba(0,0,0,0.25));
+      }
+
+      .route-hit-target {
+        stroke-opacity: 0.01;
+      }
+
+      .selected-glow-outer {
+        stroke: #ff9dcc;
+        stroke-opacity: 0.34;
+        filter: drop-shadow(0 0 8px rgba(255, 129, 191, 0.8)) drop-shadow(0 0 18px rgba(255, 176, 214, 0.45));
+        animation: glowPulse 1.7s ease-in-out infinite;
+      }
+
+      .selected-glow-core {
+        stroke: #ef5da8;
+        stroke-opacity: 0.98;
+        stroke-dasharray: 16 10;
+        filter: drop-shadow(0 0 4px rgba(255, 197, 223, 0.95));
+        animation: dashMove 1.2s linear infinite;
+      }
+
+      .reroute-line {
+        stroke-dasharray: 12 10;
+      }
+
+      @keyframes dashMove {
+        from { stroke-dashoffset: 0; }
+        to { stroke-dashoffset: -52; }
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { stroke-opacity: 0.26; }
+        50% { stroke-opacity: 0.68; }
+      }
+
+
+      /* Small-phone responsive tune (iPhone viewport ratio) */
+      @media (max-width: 430px), (max-height: 820px) {
+        .top-wrap {
+          padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);
+        }
+
+        .route-bar {
+          border-radius: 22px 22px 14px 14px;
+          padding: 10px 10px 9px;
+        }
+
+        .search-row {
+          grid-template-columns: 30px 1fr 24px;
+          gap: 8px;
+        }
+
+        .icon-btn {
+          width: 30px;
+          height: 30px;
+          font-size: 18px;
+        }
+
+        .swap-btn {
+          width: 24px;
+          height: 24px;
+          font-size: 18px;
+        }
+
+        .search-stack {
+          gap: 6px;
+        }
+
+        .search-field {
+          min-height: 40px;
+          border-radius: 12px;
+          padding: 0 13px;
+          font-size: 14px;
+        }
+
+        .transport-tabs {
+          gap: 8px;
+          padding: 10px 8px 0;
+        }
+
+        .transport-tab {
+          height: 36px;
+          font-size: 14px;
+        }
+
+        .floating-left-tools {
+          left: 10px;
+          bottom: calc(env(safe-area-inset-bottom) + 255px);
+          gap: 8px;
+        }
+
+        .tool-fab {
+          width: 48px;
+          height: 48px;
+          font-size: 22px;
+        }
+
+        .vehicle-pill {
+          right: 10px;
+          bottom: calc(env(safe-area-inset-bottom) + 188px);
+          min-height: 44px;
+          padding: 0 12px;
+          font-size: 14px;
+          border-radius: 14px;
+        }
+
+        .ai-tool {
+          font-size: 13px;
+        }
+
+        .helper-toast {
+          bottom: calc(env(safe-area-inset-bottom) + 230px);
+          font-size: 13px;
+          padding: 8px 12px;
+        }
+
+        .sheet {
+          margin: 0 0 6px;
+          padding: 8px 10px 0;
+        }
+
+        .sheet-card {
+          border-radius: 22px 22px 0 0;
+        }
+
+        .sheet-handle {
+          width: 36px;
+          height: 4px;
+          margin: 8px auto 8px;
+        }
+
+        .state-panel {
+          padding: 0 12px 12px;
+        }
+
+        .route-options {
+          gap: 9px;
+          padding: 0 10px 12px;
+        }
+
+        .route-card {
+          min-width: 140px;
+          border-radius: 16px;
+          padding: 10px;
+        }
+
+        .small-btn {
+          min-width: 46px;
+          height: 32px;
+          border-radius: 10px;
+          font-size: 13px;
+        }
+
+        .route-title {
+          font-size: 13px;
+        }
+
+        .route-time {
+          font-size: 30px;
+          margin-bottom: 8px;
+        }
+
+        .route-desc {
+          font-size: 13px;
+        }
+
+        .sheet-actions {
+          grid-template-columns: 52px 1fr;
+          gap: 10px;
+          padding: 0 10px 12px;
+        }
+
+        .history-btn {
+          border-radius: 14px;
+          font-size: 24px;
+        }
+
+        .primary-btn {
+          min-height: 50px;
+          border-radius: 14px;
+          font-size: 16px;
+        }
+
+        .inline-btn,
+        .secondary-btn {
+          min-height: 46px;
+          border-radius: 14px;
+          font-size: 15px;
+        }
+
+        .sheet-title {
+          font-size: 19px;
+          margin-bottom: 6px;
+        }
+
+        .sheet-sub {
+          font-size: 14px;
+          margin-bottom: 12px;
+        }
+
+        .voice-button {
+          width: 84px;
+          height: 84px;
+          font-size: 36px;
+          box-shadow: 0 0 0 12px rgba(10, 102, 255, 0.08);
+        }
+
+        textarea {
+          min-height: 76px;
+          font-size: 14px;
+        }
+
+        #app.ui-route .bottom-area {
+          max-height: 31vh;
+        }
+
+        #app.ui-select .bottom-area,
+        #app.ui-confirm .bottom-area,
+        #app.ui-done .bottom-area {
+          max-height: 50vh;
+        }
+
+        #app.ui-input .bottom-area {
+          max-height: 68vh;
+        }
+
+      }
+
+    </style>
+  </head>
+  <body>
+    <main id="app">
+      <div id="map"></div>
+      <div id="brushLayer" class="brush-layer hidden"></div>
+      <div class="map-dim" id="mapDim"></div>
+
+      <div class="top-wrap">
+        <section class="route-bar">
+          <div class="simple-search">
+            <span style="font-size:18px; color:#1e232b;">‹</span>
+            <input id="simpleSearchInput" placeholder="장소, 주소 검색" />
+            <button class="simple-icon-btn hidden" id="simpleClearBtn" aria-label="입력 지우기">✕</button>
+            <button class="simple-icon-btn hidden" id="simpleSearchBtn" aria-label="검색">⌕</button>
+          </div>
+          <div class="search-row hidden" id="detailedSearchRow">
+            <button class="icon-btn" aria-label="뒤로가기">‹</button>
+            <div class="search-stack">
+              <label class="search-field">
+                <input id="originInput" type="text" placeholder="내 위치를 확인 중..." readonly />
+              </label>
+              <label class="search-field">
+                <input id="destinationInput" type="text" placeholder="목적지를 입력하고 Enter" />
+              </label>
+            </div>
+            <button class="swap-btn" id="searchBtn" aria-label="목적지 검색">⌕</button>
+          </div>
+          <div class="transport-tabs hidden" id="transportTabs">
+            <div class="transport-tab active">🚗 16분</div>
+            <div class="transport-tab">🚌</div>
+            <div class="transport-tab">🚶<span class="tiny">N</span></div>
+          </div>
+        </section>
+      </div>
+      <section class="search-overlay hidden" id="searchOverlay">
+        <div class="recent-title">최근 기록</div>
+        <button class="recent-item" data-place="국민대학교">국민대학교</button>
+      </section>
+
+      <div class="floating-left-tools" id="mapTools">
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 개인화 모드">
+          <span class="ai-text">AI</span>
+        </button>
+        <button class="tool-fab">★</button>
+      </div>
+
+      <div class="helper-toast" id="helperToast"></div>
+      <section class="tag-list-sheet hidden" id="tagListSheet">
+        <strong style="display:block; margin-bottom:8px; font-size:15px; color:#242a33;">나의 태깅</strong>
+        <div id="tagListBody" style="font-size:14px; color:#4b5462; line-height:1.5;">아직 저장된 태깅이 없어요.</div>
+      </section>
+
+      <div class="bottom-area">
+        <section class="sheet">
+          <div class="sheet-card">
+            <div class="sheet-handle"></div>
+
+            <div class="state-panel show" id="state-route">
+              <div class="route-options">
+                <article class="route-card active">
+                  <div class="route-top">
+                    <div class="route-title">추천 경로</div>
+                    <button class="small-btn">상세</button>
+                  </div>
+                  <div class="route-time">16분</div>
+                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                </article>
+                <article class="route-card">
+                  <div class="route-top">
+                    <div class="route-title" style="color:#707784">무료도로 우선</div>
+                    <button class="small-btn">상세</button>
+                  </div>
+                  <div class="route-time">16분</div>
+                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                </article>
+              </div>
+
+              <div class="sheet-actions">
+                <button class="history-btn">◔</button>
+                <button class="primary-btn" id="startGuideBtn">안내시작</button>
+              </div>
+            </div>
+
+            <div class="state-panel" id="state-select">
+              <h3 class="sheet-title">선택한 구간을 태깅할까요?</h3>
+              <p class="sheet-sub">우측의 AI 버튼으로 개인화 모드를 켠 뒤, 지도 위를 문질러 영역을 그리면 AI가 보정해 해당 영역을 태깅합니다.</p>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
+                <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">한남 IC 주변 구간</div>
+              </div>
+              <div class="dual-actions" style="margin-bottom:10px;">
+                <button class="inline-btn" id="avoidModeBtn">회피 구간</button>
+                <button class="secondary-btn" id="preferModeBtn">선호 구간</button>
+              </div>
+              <div class="dual-actions">
+                <button class="inline-btn" id="selectCancelBtn">취소</button>
+                <button class="primary-btn" id="selectConfirmBtn">태깅하기</button>
+              </div>
+            </div>
+
+            <div class="state-panel" id="state-input">
+              <h3 class="sheet-title">이 구간을 언제 선호하거나 회피할까요?</h3>
+              <p class="sheet-sub">지금 선택한 구간 기준으로, 선호/회피하고 싶은 조건을 말씀해 주세요.</p>
+              <div class="voice-zone">
+                <button class="voice-button" id="voiceBtn" aria-label="음성 입력">
+                  <svg class="voice-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M12 15a4 4 0 0 0 4-4V5a4 4 0 1 0-8 0v6a4 4 0 0 0 4 4Zm6-4a1 1 0 1 1 2 0 8 8 0 0 1-7 7.94V22h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-3.06A8 8 0 0 1 4 11a1 1 0 1 1 2 0 6 6 0 1 0 12 0Z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="textarea-wrap">
+                <textarea id="speechText" placeholder="(예시) 8분 이상 차이 안 나면, 운전하기 편한 성수대교 쪽으로 갈래"></textarea>
+              </div>
+              <div class="dual-actions">
+                <button class="inline-btn" id="inputBackBtn">이전</button>
+                <button class="primary-btn" id="parseBtn">AI 요약 보기</button>
+              </div>
+            </div>
+
+            <div class="state-panel" id="state-confirm">
+              <h3 class="sheet-title">이렇게 태깅할까요?</h3>
+              <p class="sheet-sub" id="summaryText">국민대학교 갈 때 - 도착 시간 차이가 8분 이하라면 이 구간은 피하고 성수대로로 우회합니다.</p>
+              <div class="chip-row">
+                <div class="info-chip" id="reasonChip">악취/혼잡 회피</div>
+                <div class="info-chip" id="delayChip">8분 이하 우회 허용</div>
+              </div>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 방식</strong>
+                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">목적지가 국민대학교일 때 해당 구간을 회피합니다.</div>
+              </div>
+              <div class="dual-actions" style="margin-bottom:10px;">
+                <button class="inline-btn" id="confirmBackBtn">다시 입력</button>
+                <button class="primary-btn" id="saveTagBtn">구간 태깅 추가하기</button>
+              </div>
+            </div>
+
+            <div class="state-panel" id="state-done">
+              <div class="completion-card">
+                <div class="completion-icon">✓</div>
+                <h3 class="sheet-title" style="margin-bottom:10px;">구간 태깅 완료</h3>
+                <p class="sheet-sub" id="doneText">국민대학교 갈 때 도착 예정시간의 차이가 8분 이하라면 이 구간은 피하고 성수대로로 우회합니다.</p>
+                <div class="dual-actions">
+                  <button class="inline-btn" id="stayRouteBtn">기본 경로 유지</button>
+                  <button class="primary-btn" id="rerouteBtn">태깅 반영 경로 보기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <nav class="bottom-nav hidden">
+        <div class="bottom-nav-grid">
+          <button class="nav-item"><span class="emo">🏠</span>홈</button>
+          <button class="nav-item" id="myTagNavBtn"><span class="emo">📍</span>나의태깅</button>
+          <button class="nav-item"><span class="emo">⭐</span>저장</button>
+          <button class="nav-item"><span class="emo">🔄</span>카라이프</button>
+          <button class="nav-item"><span class="emo">👤</span>마이</button>
+        </div>
+      </nav>
+    </main>
+
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      const DEFAULT_FALLBACK = [37.5665, 126.978];
+
+      const UI_STATE = {
+        ROUTE: "route",
+        SELECT: "select",
+        INPUT: "input",
+        CONFIRM: "confirm",
+        DONE: "done",
+      };
+
+      const state = {
+        currentUI: UI_STATE.ROUTE,
+        baseRoute: null,
+        baseSeconds: 16 * 60,
+        selectedIndexes: [],
+        selectedLatLngs: [],
+        selectedMarkers: [],
+        selectionLine: null,
+        selectionGlowLine: null,
+        rerouteLine: null,
+        taggedMarkers: [],
+        activeIntent: null,
+        personalizationMode: false,
+        userLocation: null,
+        destinationLocation: null,
+        brushLatLngs: [],
+        brushLine: null,
+        correctedArea: null,
+        selectedCenter: null,
+        selectedRadiusM: 0,
+        tagMode: "avoid",
+        isBrushing: false,
+        pinchPassThrough: false,
+      };
+
+      const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView(DEFAULT_FALLBACK, 16);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap',
+      }).addTo(map);
+
+      const app = document.getElementById("app");
+      const simpleSearchInput = document.getElementById("simpleSearchInput");
+      const simpleClearBtn = document.getElementById("simpleClearBtn");
+      const simpleSearchBtn = document.getElementById("simpleSearchBtn");
+      const searchOverlay = document.getElementById("searchOverlay");
+      const detailedSearchRow = document.getElementById("detailedSearchRow");
+      const transportTabs = document.getElementById("transportTabs");
+      const bottomArea = document.querySelector(".bottom-area");
+      const originInput = document.getElementById("originInput");
+      const destinationInput = document.getElementById("destinationInput");
+      const searchBtn = document.getElementById("searchBtn");
+
+      const panels = {
+        route: document.getElementById("state-route"),
+        select: document.getElementById("state-select"),
+        input: document.getElementById("state-input"),
+        confirm: document.getElementById("state-confirm"),
+        done: document.getElementById("state-done"),
+      };
+
+      const helperToast = document.getElementById("helperToast");
+      const brushLayer = document.getElementById("brushLayer");
+      const mapDim = document.getElementById("mapDim");
+      const selectedSegmentText = document.getElementById("selectedSegmentText");
+      const speechText = document.getElementById("speechText");
+      const summaryText = document.getElementById("summaryText");
+      const reasonChip = document.getElementById("reasonChip");
+      const delayChip = document.getElementById("delayChip");
+      const ruleDetailText = document.getElementById("ruleDetailText");
+      const doneText = document.getElementById("doneText");
+      const mapTools = document.getElementById("mapTools");
+      const aiTagBtn = document.getElementById("aiTagBtn");
+      const myTagNavBtn = document.getElementById("myTagNavBtn");
+      const tagListSheet = document.getElementById("tagListSheet");
+      const tagListBody = document.getElementById("tagListBody");
+      const bottomNav = document.querySelector(".bottom-nav");
+      const avoidModeBtn = document.getElementById("avoidModeBtn");
+      const preferModeBtn = document.getElementById("preferModeBtn");
+
+      const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
+      const routeDescEls = Array.from(document.querySelectorAll(".route-desc"));
+
+      let baseLine;
+      let routeHitLine;
+      let userMarker;
+      let accuracyCircle;
+      let destinationMarker;
+      let toastTimer;
+
+      function setRouteStage(hasRoute) {
+        simpleSearchInput.closest(".simple-search").classList.toggle("hidden", hasRoute);
+        detailedSearchRow.classList.toggle("hidden", !hasRoute);
+        transportTabs.classList.toggle("hidden", !hasRoute);
+        bottomArea.classList.toggle("hidden", !hasRoute);
+        mapTools.classList.toggle("hidden", !hasRoute);
+        if (!hasRoute) tagListSheet.classList.add("hidden");
+      }
+
+      function renderTagList() {
+        if (!state.taggedMarkers.length) {
+          tagListBody.textContent = "아직 저장된 태깅이 없어요.";
+          return;
+        }
+        const lines = state.taggedMarkers.map((_, idx) => {
+          const txt = idx === state.taggedMarkers.length - 1 ? (state.activeIntent?.raw || "최근 저장 규칙") : `저장된 구간 태깅 ${idx + 1}`;
+          return `<div style="padding:8px 0; border-bottom:1px solid #eef2f7;">• ${txt}</div>`;
+        });
+        tagListBody.innerHTML = lines.join("");
+      }
+
+      function syncSimpleSearchActions() {
+        const hasText = simpleSearchInput.value.trim().length > 0;
+        simpleClearBtn.classList.toggle("hidden", !hasText);
+        simpleSearchBtn.classList.toggle("hidden", !hasText);
+      }
+
+      function showToast(message, time = 1800) {
+        helperToast.textContent = message;
+        helperToast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => helperToast.classList.remove("show"), time);
+      }
+
+      function setUI(stateName) {
+        state.currentUI = stateName;
+        Object.entries(panels).forEach(([key, el]) => {
+          el.classList.toggle("show", key === stateName);
+        });
+
+        app.classList.toggle("ui-route", stateName === UI_STATE.ROUTE);
+        app.classList.toggle("ui-select", stateName === UI_STATE.SELECT);
+        app.classList.toggle("ui-input", stateName === UI_STATE.INPUT);
+        app.classList.toggle("ui-confirm", stateName === UI_STATE.CONFIRM);
+        app.classList.toggle("ui-done", stateName === UI_STATE.DONE);
+
+        const dimmed = [UI_STATE.SELECT, UI_STATE.INPUT, UI_STATE.CONFIRM, UI_STATE.DONE].includes(stateName);
+        mapDim.classList.toggle("active", dimmed);
+
+        mapTools.classList.toggle("hidden", stateName !== UI_STATE.ROUTE || !state.baseRoute?.length);
+        const shouldShowTagButton = stateName === UI_STATE.ROUTE && Boolean(state.baseRoute?.length);
+        aiTagBtn.classList.toggle("hidden", !shouldShowTagButton);
+        const brushActive = stateName === UI_STATE.ROUTE && state.personalizationMode;
+        brushLayer.classList.toggle("hidden", !brushActive);
+        brushLayer.classList.toggle("active", brushActive);
+        bottomNav.classList.add("hidden");
+      }
+
+      function toLngLat(latlng) {
+        return `${latlng[1]},${latlng[0]}`;
+      }
+
+      async function fetchRoute(coords) {
+        const routePart = coords.map(toLngLat).join(";");
+        const url = `https://router.project-osrm.org/route/v1/driving/${routePart}?overview=full&geometries=geojson&alternatives=false&steps=false`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("route api failed");
+        const json = await res.json();
+        if (!json.routes?.length) throw new Error("route not found");
+        return json.routes[0];
+      }
+
+      async function geocodePlace(query) {
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        if (!res.ok) throw new Error("geocode failed");
+        const rows = await res.json();
+        if (!rows.length) throw new Error("destination not found");
+        return {
+          lat: Number(rows[0].lat),
+          lng: Number(rows[0].lon),
+          label: rows[0].display_name,
+        };
+      }
+
+      function nearestRouteIndex(latlng) {
+        let bestIdx = 0;
+        let bestDist = Infinity;
+        state.baseRoute.forEach((p, idx) => {
+          const dx = p[0] - latlng.lat;
+          const dy = p[1] - latlng.lng;
+          const d = dx * dx + dy * dy;
+          if (d < bestDist) {
+            bestDist = d;
+            bestIdx = idx;
+          }
+        });
+        return bestIdx;
+      }
+
+      function addFlag(latlng) {
+        const marker = L.marker(latlng, {
+          icon: L.divIcon({
+            className: "",
+            html: '<div class="flag-pin">📍</div>',
+            iconSize: [26, 26],
+            iconAnchor: [13, 24],
+          }),
+        }).addTo(map);
+        state.selectedMarkers.push(marker);
+      }
+
+      function resetSelection(keepMode = false) {
+        state.selectedIndexes = [];
+        state.selectedLatLngs = [];
+        state.selectedCenter = null;
+        state.selectedRadiusM = 0;
+        state.brushLatLngs = [];
+        state.selectedMarkers.forEach((m) => map.removeLayer(m));
+        state.selectedMarkers = [];
+        if (state.selectionLine) map.removeLayer(state.selectionLine);
+        if (state.selectionGlowLine) map.removeLayer(state.selectionGlowLine);
+        if (state.brushLine) map.removeLayer(state.brushLine);
+        if (state.correctedArea) map.removeLayer(state.correctedArea);
+        state.selectionLine = null;
+        state.selectionGlowLine = null;
+        state.brushLine = null;
+        state.correctedArea = null;
+        if (!keepMode) state.personalizationMode = false;
+      }
+
+      function describeSelectedSegment(chunk) {
+        if (state.tagMode === "prefer") {
+          return `AI 보정 선호 영역 · 반경 약 ${Math.round(state.selectedRadiusM)}m`;
+        }
+        return `AI 보정 회피 영역 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
+      }
+
+      function updateRouteCards(route) {
+        const mins = Math.max(1, Math.round(route.duration / 60));
+        const km = (route.distance / 1000).toFixed(1);
+        routeTimeEls.forEach((el) => {
+          el.textContent = `${mins}분`;
+        });
+        routeDescEls.forEach((el) => {
+          el.innerHTML = `예상 소요 ${mins}분<br />${km}km · 통행료 정보 없음`;
+        });
+      }
+
+      function renderUserLocation(latlng, accuracy = 40) {
+        state.userLocation = latlng;
+        originInput.value = `내 위치 (${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)})`;
+
+        if (!userMarker) {
+          userMarker = L.circleMarker(latlng, {
+            radius: 8,
+            color: "#fff",
+            weight: 2,
+            fillColor: "#0a66ff",
+            fillOpacity: 1,
+          }).addTo(map);
+        } else {
+          userMarker.setLatLng(latlng);
+        }
+
+        if (!accuracyCircle) {
+          accuracyCircle = L.circle(latlng, {
+            radius: Math.max(20, Math.min(accuracy, 120)),
+            color: "#3e8dff",
+            fillColor: "#3e8dff",
+            fillOpacity: 0.13,
+            weight: 1,
+          }).addTo(map);
+        } else {
+          accuracyCircle.setLatLng(latlng);
+          accuracyCircle.setRadius(Math.max(20, Math.min(accuracy, 120)));
+        }
+
+        map.setView(latlng, 18, { animate: true });
+      }
+
+      function clearCurrentRoute() {
+        if (baseLine) map.removeLayer(baseLine);
+        if (routeHitLine) map.removeLayer(routeHitLine);
+        if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+        baseLine = null;
+        routeHitLine = null;
+        state.rerouteLine = null;
+        state.baseRoute = null;
+        state.destinationLocation = null;
+        if (destinationMarker) {
+          map.removeLayer(destinationMarker);
+          destinationMarker = null;
+        }
+      }
+
+      function getBrushLatLng(event) {
+        const sourcePoint = event.touches?.[0] || event.changedTouches?.[0] || event;
+        const containerPoint = map.mouseEventToContainerPoint(sourcePoint);
+        return map.containerPointToLatLng(containerPoint);
+      }
+
+      function computeBrushArea(points) {
+        const centerLat = points.reduce((a, p) => a + p[0], 0) / points.length;
+        const centerLng = points.reduce((a, p) => a + p[1], 0) / points.length;
+        const center = [centerLat, centerLng];
+        let radius = 40;
+        points.forEach((p) => {
+          const d = map.distance(center, p);
+          if (d > radius) radius = d;
+        });
+        return { center, radius: Math.max(35, Math.min(radius * 1.1, 300)) };
+      }
+
+      function highlightSelectionFromBrush() {
+        if (!state.brushLatLngs.length) return;
+        const { center, radius } = computeBrushArea(state.brushLatLngs);
+        state.selectedCenter = center;
+        state.selectedRadiusM = radius;
+
+        if (state.correctedArea) map.removeLayer(state.correctedArea);
+        state.correctedArea = L.circle(center, {
+          radius,
+          color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
+          weight: 3,
+          fillColor: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
+          fillOpacity: 0.2,
+        }).addTo(map);
+
+        if (state.baseRoute?.length) {
+          const chunk = state.baseRoute.filter((pt) => map.distance(center, pt) <= radius);
+          state.selectedLatLngs = chunk;
+
+          if (state.selectionGlowLine) map.removeLayer(state.selectionGlowLine);
+          if (state.selectionLine) map.removeLayer(state.selectionLine);
+
+          if (chunk.length >= 2) {
+            state.selectionGlowLine = L.polyline(chunk, {
+              color: state.tagMode === "prefer" ? "#79f3b2" : "#ff9dcc",
+              weight: 18,
+              opacity: 0.42,
+              className: "selected-glow-outer",
+            }).addTo(map);
+
+            state.selectionLine = L.polyline(chunk, {
+              color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
+              weight: 8,
+              opacity: 0.98,
+              className: "selected-glow-core",
+            }).addTo(map);
+          }
+        }
+
+        selectedSegmentText.textContent = describeSelectedSegment(state.selectedLatLngs);
+        setUI(UI_STATE.SELECT);
+        showToast("문질러 선택한 영역을 AI가 보정해서 태깅 대상으로 잡았어요.");
+      }
+
+      function activatePersonalizationMode() {
+        if (!state.destinationLocation) {
+          showToast("먼저 목적지를 검색해 경로를 만들어 주세요.", 2200);
+          return;
+        }
+        state.personalizationMode = true;
+        resetSelection(true);
+        setUI(UI_STATE.ROUTE);
+        showToast("개인화 모드 ON: 지도 위를 문질러 원하는 영역을 그려 주세요.", 2600);
+      }
+
+      function startBrush(event) {
+        if (!state.personalizationMode) return;
+        if (event.touches && event.touches.length > 1) {
+          state.pinchPassThrough = true;
+          brushLayer.classList.remove("active");
+          return;
+        }
+        event.preventDefault();
+        const latlng = getBrushLatLng(event);
+        if (!latlng) return;
+        state.isBrushing = true;
+        state.brushLatLngs = [[latlng.lat, latlng.lng]];
+        if (state.brushLine) map.removeLayer(state.brushLine);
+        state.brushLine = L.polyline(state.brushLatLngs, {
+          color: "#8fb7ff",
+          weight: 10,
+          opacity: 0.75,
+          lineCap: "round",
+          lineJoin: "round",
+        }).addTo(map);
+      }
+
+      function moveBrush(event) {
+        if (!state.isBrushing) return;
+        if (event.touches && event.touches.length > 1) {
+          state.isBrushing = false;
+          state.pinchPassThrough = true;
+          brushLayer.classList.remove("active");
+          return;
+        }
+        event.preventDefault();
+        const latlng = getBrushLatLng(event);
+        if (!latlng) return;
+        state.brushLatLngs.push([latlng.lat, latlng.lng]);
+        if (state.brushLine) state.brushLine.setLatLngs(state.brushLatLngs);
+      }
+
+      function endBrush() {
+        if (!state.isBrushing) return;
+        state.isBrushing = false;
+        highlightSelectionFromBrush();
+      }
+
+      function restoreBrushLayerIfNeeded(event) {
+        if (!state.personalizationMode) return;
+        const touches = event.touches ? event.touches.length : 0;
+        if (touches < 2) {
+          state.pinchPassThrough = false;
+          brushLayer.classList.add("active");
+        }
+      }
+
+      brushLayer.addEventListener("touchstart", startBrush, { passive: false });
+      brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
+      brushLayer.addEventListener("touchend", (event) => {
+        endBrush();
+        restoreBrushLayerIfNeeded(event);
+      }, { passive: false });
+      brushLayer.addEventListener("touchcancel", (event) => {
+        endBrush();
+        restoreBrushLayerIfNeeded(event);
+      }, { passive: false });
+      brushLayer.addEventListener("mousedown", startBrush);
+      brushLayer.addEventListener("mousemove", moveBrush);
+      window.addEventListener("mouseup", endBrush);
+      window.addEventListener("touchend", restoreBrushLayerIfNeeded, { passive: true });
+      window.addEventListener("touchcancel", restoreBrushLayerIfNeeded, { passive: true });
+
+      function parseUserIntent(text) {
+        const delayMatch = text.match(/(\d+)\s*분/);
+        const delay = delayMatch ? parseInt(delayMatch[1], 10) : 8;
+        let reason = "혼잡 회피";
+        let action = "대체 경로로 우회";
+
+        if (text.includes("냄새")) reason = "냄새/환경 회피";
+        if (text.includes("막혀") || text.includes("정체") || text.includes("차막")) reason = "정체 회피";
+        if (text.includes("복잡") || text.includes("골목")) reason = "복잡한 진입 회피";
+        if (text.includes("큰길")) action = "큰길 위주로 우회";
+
+        return {
+          destination: destinationInput.value.trim() || "현재 목적지",
+          delay,
+          reason,
+          action,
+          raw: text,
+        };
+      }
+
+      function renderRule(intent) {
+        const modeText = state.tagMode === "prefer" ? "우선 통과" : "회피";
+        summaryText.textContent = `${intent.destination} 갈 때 - 도착 시간 차이가 ${intent.delay}분 이하라면 AI 보정 영역을 ${modeText}하도록 반영합니다.`;
+        reasonChip.textContent = `${intent.reason} · ${modeText}`;
+        delayChip.textContent = `${intent.delay}분 이하 개인화 적용`;
+        ruleDetailText.textContent = `목적지가 ${intent.destination}일 때, 선택한 AI 보정 영역을 ${modeText} 규칙으로 반영합니다.`;
+        doneText.textContent = summaryText.textContent;
+      }
+
+      function addTaggedMarker(midpoint) {
+        const marker = L.marker(midpoint, {
+          icon: L.divIcon({
+            className: "",
+            html: '<div class="tag-pin">AI</div>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+          }),
+        }).addTo(map);
+        state.taggedMarkers.push(marker);
+      }
+
+      function calcDetourWaypoint(segment) {
+        const mid = segment[Math.floor(segment.length / 2)];
+        const before = segment[Math.max(0, Math.floor(segment.length / 2) - 1)] || mid;
+        const dy = mid[0] - before[0];
+        const dx = mid[1] - before[1];
+        const len = Math.sqrt(dx * dx + dy * dy) || 1;
+        const perpLat = -dx / len;
+        const perpLng = dy / len;
+        const offset = 0.009;
+        return [mid[0] + perpLat * offset, mid[1] + perpLng * offset];
+      }
+
+      async function applyReroute() {
+        if (!state.userLocation || !state.destinationLocation || !state.selectedCenter) return;
+        try {
+          const waypoints = state.tagMode === "prefer"
+            ? [state.userLocation, state.selectedCenter, state.destinationLocation]
+            : [state.userLocation, calcDetourWaypoint(state.selectedLatLngs.length ? state.selectedLatLngs : [state.selectedCenter]), state.destinationLocation];
+          const reroute = await fetchRoute(waypoints);
+          const latlngs = reroute.geometry.coordinates.map((c) => [c[1], c[0]]);
+          if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+          state.rerouteLine = L.polyline(latlngs, {
+            color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
+            weight: 7,
+            opacity: 0.92,
+            className: "reroute-line",
+          }).addTo(map);
+          showToast(state.tagMode === "prefer" ? "선호 구간을 반영한 경로를 표시했어요." : "회피 구간을 반영한 우회 경로를 표시했어요.", 2200);
+        } catch (e) {
+          showToast("개인화 경로 계산에 실패했어요. 기본 경로를 유지합니다.", 2200);
+        }
+      }
+
+      async function buildRouteFromSearch() {
+        const destinationText = destinationInput.value.trim();
+        if (!destinationText) {
+          showToast("목적지를 입력해 주세요.");
+          return;
+        }
+        if (!state.userLocation) {
+          showToast("현재 위치를 먼저 확인하고 있어요. 잠시 후 다시 시도해 주세요.", 2400);
+          return;
+        }
+
+        try {
+          const place = await geocodePlace(destinationText);
+          state.destinationLocation = [place.lat, place.lng];
+          destinationInput.value = destinationText;
+
+          if (destinationMarker) map.removeLayer(destinationMarker);
+          destinationMarker = L.marker(state.destinationLocation, {
+            icon: L.divIcon({
+              className: "",
+              html: '<div class="flag-pin">🏁</div>',
+              iconSize: [26, 26],
+              iconAnchor: [13, 24],
+            }),
+          }).addTo(map);
+
+          const route = await fetchRoute([state.userLocation, state.destinationLocation]);
+          state.baseSeconds = route.duration;
+          state.baseRoute = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+
+          if (baseLine) map.removeLayer(baseLine);
+          if (routeHitLine) map.removeLayer(routeHitLine);
+          if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+
+          baseLine = L.polyline(state.baseRoute, {
+            color: "#0a66ff",
+            weight: 8,
+            opacity: 0.96,
+          }).addTo(map);
+
+          routeHitLine = L.polyline(state.baseRoute, {
+            color: "#0a66ff",
+            weight: 30,
+            opacity: 0.01,
+            className: "route-hit-target",
+          }).addTo(map);
+
+          map.fitBounds(baseLine.getBounds(), {
+            paddingTopLeft: [26, 170],
+            paddingBottomRight: [26, 210],
+            maxZoom: 16,
+          });
+
+          updateRouteCards(route);
+          setUI(UI_STATE.ROUTE);
+          setRouteStage(true);
+          searchOverlay.classList.add("hidden");
+        } catch (e) {
+          showToast("목적지 검색 또는 경로 생성에 실패했습니다.", 2400);
+        }
+      }
+
+      function requestCurrentLocation(focus = true) {
+        if (!navigator.geolocation) {
+          showToast("브라우저 위치 기능을 사용할 수 없습니다.", 2200);
+          originInput.value = "위치 권한 없음";
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const latlng = [pos.coords.latitude, pos.coords.longitude];
+            renderUserLocation(latlng, pos.coords.accuracy || 40);
+            if (!focus) {
+              map.setView(latlng, map.getZoom(), { animate: true });
+            }
+            showToast("현재 위치를 기준으로 지도를 표시합니다.", 1800);
+          },
+          () => {
+            originInput.value = "서울 시청(기본 위치)";
+            renderUserLocation(DEFAULT_FALLBACK, 80);
+            showToast("위치 권한이 없어 기본 위치로 시작합니다.", 2400);
+          },
+          { enableHighAccuracy: true, timeout: 9000, maximumAge: 0 }
+        );
+      }
+
+      function updateTagModeUI() {
+        const avoidActive = state.tagMode === "avoid";
+        avoidModeBtn.classList.toggle("secondary-btn", avoidActive);
+        avoidModeBtn.classList.toggle("inline-btn", !avoidActive);
+        preferModeBtn.classList.toggle("secondary-btn", !avoidActive);
+        preferModeBtn.classList.toggle("inline-btn", avoidActive);
+      }
+
+      document.getElementById("startGuideBtn").addEventListener("click", () => {
+        if (!state.baseRoute?.length) {
+          showToast("목적지를 검색해 경로를 먼저 만들어 주세요.", 2200);
+          return;
+        }
+        showToast("안내를 시작합니다. 좌측 AI 버튼으로 구간 태깅 모드를 켤 수 있어요.", 2600);
+      });
+
+      document.getElementById("selectCancelBtn").addEventListener("click", () => {
+        resetSelection();
+        map.dragging.enable();
+        setUI(UI_STATE.ROUTE);
+        showToast("구간 선택을 취소했어요.");
+      });
+
+      document.getElementById("selectConfirmBtn").addEventListener("click", () => {
+        setUI(UI_STATE.INPUT);
+      });
+
+      document.getElementById("inputBackBtn").addEventListener("click", () => {
+        setUI(UI_STATE.SELECT);
+      });
+
+      document.getElementById("parseBtn").addEventListener("click", () => {
+        const text = speechText.value.trim();
+        if (!text) {
+          showToast("구간에 대한 설명을 먼저 입력해 주세요.");
+          return;
+        }
+        state.activeIntent = parseUserIntent(text);
+        renderRule(state.activeIntent);
+        setUI(UI_STATE.CONFIRM);
+      });
+
+      document.getElementById("confirmBackBtn").addEventListener("click", () => {
+        setUI(UI_STATE.INPUT);
+      });
+
+      document.getElementById("saveTagBtn").addEventListener("click", () => {
+        if (!state.activeIntent || !state.selectedCenter) {
+          showToast("먼저 구간과 태그 내용을 확인해 주세요.");
+          return;
+        }
+        const midpoint = state.selectedCenter;
+        addTaggedMarker(midpoint);
+        renderTagList();
+        setUI(UI_STATE.DONE);
+      });
+
+      document.getElementById("stayRouteBtn").addEventListener("click", () => {
+        setUI(UI_STATE.ROUTE);
+        resetSelection();
+        map.dragging.enable();
+        speechText.value = "";
+        state.activeIntent = null;
+        showToast("태깅만 저장하고 기본 경로를 유지합니다.");
+      });
+
+      document.getElementById("rerouteBtn").addEventListener("click", async () => {
+        await applyReroute();
+        setUI(UI_STATE.ROUTE);
+        resetSelection();
+        map.dragging.enable();
+        speechText.value = "";
+        state.activeIntent = null;
+      });
+
+      avoidModeBtn.addEventListener("click", () => {
+        state.tagMode = "avoid";
+        updateTagModeUI();
+        if (state.brushLatLngs.length) highlightSelectionFromBrush();
+      });
+
+      preferModeBtn.addEventListener("click", () => {
+        state.tagMode = "prefer";
+        updateTagModeUI();
+        if (state.brushLatLngs.length) highlightSelectionFromBrush();
+      });
+
+      document.getElementById("voiceBtn").addEventListener("click", () => {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          showToast("이 브라우저는 음성 인식을 지원하지 않아 텍스트 입력으로 진행합니다.", 2200);
+          speechText.focus();
+          return;
+        }
+
+        const recognition = new SR();
+        recognition.lang = "ko-KR";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        showToast("듣고 있어요. 자연스럽게 말해 주세요.", 2200);
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          speechText.value = transcript;
+          showToast("음성 내용을 입력창에 반영했어요.");
+        };
+        recognition.onerror = () => showToast("음성 인식에 실패했습니다. 직접 입력해 주세요.", 2200);
+        recognition.start();
+      });
+
+      searchBtn.addEventListener("click", buildRouteFromSearch);
+      simpleSearchInput.addEventListener("focus", () => {
+        searchOverlay.classList.remove("hidden");
+      });
+      simpleSearchInput.addEventListener("input", () => {
+        syncSimpleSearchActions();
+        searchOverlay.classList.remove("hidden");
+      });
+      simpleSearchInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          destinationInput.value = simpleSearchInput.value.trim();
+          buildRouteFromSearch();
+        }
+      });
+      simpleSearchBtn.addEventListener("click", () => {
+        destinationInput.value = simpleSearchInput.value.trim();
+        buildRouteFromSearch();
+      });
+      simpleClearBtn.addEventListener("click", () => {
+        simpleSearchInput.value = "";
+        syncSimpleSearchActions();
+        simpleSearchInput.focus();
+      });
+      document.querySelectorAll(".recent-item").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const place = btn.getAttribute("data-place");
+          simpleSearchInput.value = place;
+          syncSimpleSearchActions();
+          destinationInput.value = place;
+          buildRouteFromSearch();
+        });
+      });
+      destinationInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          buildRouteFromSearch();
+        }
+      });
+
+      aiTagBtn.addEventListener("click", () => {
+        activatePersonalizationMode();
+      });
+      myTagNavBtn.addEventListener("click", () => {
+        if (!state.baseRoute?.length) {
+          showToast("먼저 목적지를 검색해 주세요.");
+          return;
+        }
+        renderTagList();
+        tagListSheet.classList.toggle("hidden");
+      });
+
+      setUI(UI_STATE.ROUTE);
+      syncSimpleSearchActions();
+      setRouteStage(false);
+      updateTagModeUI();
+      clearCurrentRoute();
+      requestCurrentLocation(true);
+      showToast("현재 위치를 불러왔어요. 목적지 검색 후 좌측 AI 버튼으로 태깅을 시작하세요.", 2800);
+    </script>
+  </body>
+</html>
