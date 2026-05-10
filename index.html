@@ -80,7 +80,7 @@
       }
 
       .brush-layer.active {
-        pointer-events: auto;
+        pointer-events: none;
       }
 
       .map-dim {
@@ -1670,13 +1670,14 @@
         }
       }, { passive: true });
 
-      brushLayer.addEventListener("touchstart", startBrush, { passive: false });
-      brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
-      brushLayer.addEventListener("touchend", (event) => {
+      const mapContainer = map.getContainer();
+      mapContainer.addEventListener("touchstart", startBrush, { passive: false });
+      mapContainer.addEventListener("touchmove", moveBrush, { passive: false });
+      mapContainer.addEventListener("touchend", (event) => {
         endBrush();
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
-      brushLayer.addEventListener("touchcancel", (event) => {
+      mapContainer.addEventListener("touchcancel", (event) => {
         endBrush();
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
