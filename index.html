@@ -1316,6 +1316,13 @@
         const brushActive = stateName === UI_STATE.ROUTE && state.personalizationMode;
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
+        if (brushActive) {
+          map.touchZoom.disable();
+          map.dragging.disable();
+        } else {
+          map.touchZoom.enable();
+          map.dragging.enable();
+        }
         bottomNav.classList.add("hidden");
       }
 
@@ -1541,8 +1548,8 @@
       function startBrush(event) {
         if (!state.personalizationMode) return;
         if (event.touches && event.touches.length > 1) {
-          state.pinchPassThrough = true;
-          brushLayer.classList.remove("active");
+          state.isBrushing = false;
+          brushLayer.style.pointerEvents = "none";
           return;
         }
         event.preventDefault();
@@ -1564,8 +1571,7 @@
         if (!state.isBrushing) return;
         if (event.touches && event.touches.length > 1) {
           state.isBrushing = false;
-          state.pinchPassThrough = true;
-          brushLayer.classList.remove("active");
+          brushLayer.style.pointerEvents = "none";
           return;
         }
         event.preventDefault();
@@ -1585,8 +1591,7 @@
         if (!state.personalizationMode) return;
         const touches = event.touches ? event.touches.length : 0;
         if (touches < 2) {
-          state.pinchPassThrough = false;
-          brushLayer.classList.add("active");
+          brushLayer.style.pointerEvents = "auto";
         }
       }
 
