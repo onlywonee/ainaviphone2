@@ -746,6 +746,18 @@
         white-space: nowrap;
       }
 
+      .ai-route-glow {
+        stroke-dasharray: 10 12;
+        animation: aiRouteDash 1.1s linear infinite;
+        filter: drop-shadow(0 0 6px rgba(125, 178, 255, 0.9));
+      }
+
+      @keyframes aiRouteDash {
+        from { stroke-dashoffset: 0; opacity: 0.55; }
+        50% { opacity: 1; }
+        to { stroke-dashoffset: -44; opacity: 0.55; }
+      }
+
       .tag-pin {
         width: 34px;
         height: 34px;
@@ -1190,6 +1202,7 @@
         brushLatLngs: [],
         brushLine: null,
         correctedArea: null,
+        aiGlowLine: null,
         selectedCenter: null,
         selectedRadiusM: 0,
         tagMode: "avoid",
@@ -1317,13 +1330,31 @@
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
         if (brushActive) {
-          map.touchZoom.disable();
           map.dragging.disable();
         } else {
           map.touchZoom.enable();
           map.dragging.enable();
         }
+        updateAiRouteGlow(brushActive);
         bottomNav.classList.add("hidden");
+      }
+
+      function updateAiRouteGlow(enabled) {
+        if (!enabled || !state.baseRoute?.length) {
+          if (state.aiGlowLine) {
+            map.removeLayer(state.aiGlowLine);
+            state.aiGlowLine = null;
+          }
+          return;
+        }
+        if (!state.aiGlowLine) {
+          state.aiGlowLine = L.polyline(state.baseRoute, {
+            color: "#9ec2ff",
+            weight: 14,
+            opacity: 0.95,
+            className: "ai-route-glow",
+          }).addTo(map);
+        }
       }
 
       function toLngLat(latlng) {
@@ -1392,10 +1423,12 @@
         if (state.selectionGlowLine) map.removeLayer(state.selectionGlowLine);
         if (state.brushLine) map.removeLayer(state.brushLine);
         if (state.correctedArea) map.removeLayer(state.correctedArea);
+        if (state.aiGlowLine) map.removeLayer(state.aiGlowLine);
         state.selectionLine = null;
         state.selectionGlowLine = null;
         state.brushLine = null;
         state.correctedArea = null;
+        state.aiGlowLine = null;
         if (!keepMode) state.personalizationMode = false;
       }
 
