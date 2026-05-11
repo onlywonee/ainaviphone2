@@ -1617,11 +1617,13 @@
         if (event.touches && event.touches.length > 1) {
           state.isBrushing = false;
           brushLayer.style.pointerEvents = "none";
+          map.dragging.enable();
           return;
         }
         event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
+        map.dragging.disable();
         state.isBrushing = true;
         state.brushLatLngs = [[latlng.lat, latlng.lng]];
         if (state.brushLine) map.removeLayer(state.brushLine);
@@ -1639,6 +1641,7 @@
         if (event.touches && event.touches.length > 1) {
           state.isBrushing = false;
           brushLayer.style.pointerEvents = "none";
+          map.dragging.enable();
           return;
         }
         event.preventDefault();
@@ -1651,6 +1654,7 @@
       function endBrush() {
         if (!state.isBrushing) return;
         state.isBrushing = false;
+        map.dragging.enable();
         highlightSelectionFromBrush();
       }
 
@@ -1671,8 +1675,8 @@
       }, { passive: true });
 
       const mapContainer = map.getContainer();
-      mapContainer.addEventListener("touchstart", startBrush, { passive: false });
-      mapContainer.addEventListener("touchmove", moveBrush, { passive: false });
+      mapContainer.addEventListener("touchstart", startBrush, { passive: false, capture: true });
+      mapContainer.addEventListener("touchmove", moveBrush, { passive: false, capture: true });
       mapContainer.addEventListener("touchend", (event) => {
         endBrush();
         restoreBrushLayerIfNeeded(event);
