@@ -2181,20 +2181,20 @@
       });
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
-        setUI(UI_STATE.ROUTE);
         resetSelection();
         map.dragging.enable();
         speechText.value = "";
         state.activeIntent = null;
         showToast("태깅만 저장하고 기본 경로를 유지합니다.");
+             setUI(UI_STATE.ROUTE);
       });
 
       document.getElementById("rerouteBtn").addEventListener("click", async () => {
         await applyReroute();
-        setUI(UI_STATE.ROUTE);
         resetSelection();
         map.dragging.enable();
         speechText.value = "";
+                setUI(UI_STATE.ROUTE);
       });
 
       routeBackBtn.addEventListener("click", () => {
@@ -2205,6 +2205,7 @@
         searchOverlay.classList.remove("hidden");
         destinationInput.value = "";
         showToast("홈 화면으로 돌아왔어요.");
+                setUI(UI_STATE.ROUTE);
       });
 
       document.getElementById("voiceBtn").addEventListener("click", () => {
