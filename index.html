@@ -1147,15 +1147,24 @@
             </div>
 
             <div class="state-panel" id="state-confirm">
-              <h3 class="sheet-title">AI가 이렇게 이해했어요</h3>
-              <p class="sheet-sub" id="summaryText">이 구간에 대한 개인 선호를 저장할게요.</p>
-              <div class="chip-row">
-                <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
-                <div class="info-chip" id="delayChip">적용 조건: 선택 구간 + 현재 목적지</div>
+              <h3 class="sheet-title">AI가 이해한 내용</h3>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
+                <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
               </div>
               <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문 / 적용 규칙</strong>
-                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: "" · 적용: 목적지 이동 시 선택 구간에 개인 선호 반영</div>
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">생성된 태그</strong>
+                <div class="chip-row">
+                  <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
+                </div>
+              </div>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
+                <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
+              </div>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문</strong>
+                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
               </div>
               <div class="dual-actions" style="margin-bottom:10px;">
                 <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
@@ -1736,7 +1745,19 @@
           },
         ];
 
-        const matched = rules.find((rule) => rule.keywords.some((word) => text.includes(word)));
+        const matchedByPosition = rules
+          .map((rule) => {
+            const firstIndex = rule.keywords
+              .map((word) => text.indexOf(word))
+              .filter((index) => index >= 0)
+              .sort((a, b) => a - b)[0];
+            return { rule, firstIndex: Number.isInteger(firstIndex) ? firstIndex : Infinity };
+          })
+          .sort((a, b) => a.firstIndex - b.firstIndex)[0];
+
+        const matched = matchedByPosition && Number.isFinite(matchedByPosition.firstIndex)
+          ? matchedByPosition.rule
+          : null;
 
         return {
           destination: destinationInput.value.trim() || "현재 목적지",
@@ -1753,7 +1774,7 @@
         summaryText.textContent = intent.message;
         reasonChip.textContent = intent.tags.join(" ");
         delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
-        ruleDetailText.textContent = `입력 원문: "${intent.raw}" · 적용: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
+        ruleDetailText.textContent = `입력 원문: "${intent.raw}"`;
         doneText.textContent = summaryText.textContent;
       }
 
