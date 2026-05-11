@@ -292,6 +292,20 @@
         gap: 12px;
       }
 
+      .floating-right-tools {
+        position: absolute;
+        right: 16px;
+        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        z-index: 24;
+        display: grid;
+        gap: 12px;
+      }
+
+      .loc-tool {
+        font-size: 24px;
+        color: #4d78d8;
+      }
+
       .tool-fab {
         width: 58px;
         height: 58px;
@@ -1072,6 +1086,10 @@
           <span class="ai-text">AI</span>
         </button>
         <button class="tool-fab">★</button>
+      </div>
+
+      <div class="floating-right-tools" id="mapQuickTools">
+        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동">◎</button>
       </div>
 
       <div class="helper-toast" id="helperToast"></div>
@@ -1911,7 +1929,7 @@
         }
       }
 
-      function requestCurrentLocation(focus = true) {
+      function requestCurrentLocation(recenter = true) {
         if (!navigator.geolocation) {
           showToast("브라우저 위치 기능을 사용할 수 없습니다.", 2200);
           originInput.value = "위치 권한 없음";
@@ -1922,8 +1940,8 @@
           (pos) => {
             const latlng = [pos.coords.latitude, pos.coords.longitude];
             renderUserLocation(latlng, pos.coords.accuracy || 40);
-            if (!focus) {
-              map.setView(latlng, map.getZoom(), { animate: true });
+            if (recenter) {
+              map.panTo(latlng, { animate: true });
             }
             showToast("현재 위치를 기준으로 지도를 표시합니다.", 1800);
           },
@@ -2118,6 +2136,10 @@
       updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
+
+      document.getElementById("myLocationBtn").addEventListener("click", () => {
+        requestCurrentLocation(true);
+      });
       updateRouteTitleOrder();
       showToast("현재 위치를 불러왔어요. 목적지 검색 후 좌측 AI 버튼으로 태깅을 시작하세요.", 2800);
     </script>
