@@ -1228,6 +1228,7 @@
         tagMode: "avoid",
         isBrushing: false,
         pinchPassThrough: false,
+        isPinching: false,
       };
 
       const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView(DEFAULT_FALLBACK, 16);
@@ -1616,13 +1617,13 @@
       function startBrush(event) {
         if (!state.personalizationMode) return;
         if (event.touches && event.touches.length > 1) {
+          state.isPinching = true;
           state.isBrushing = false;
-          brushLayer.style.pointerEvents = "none";
           map.dragging.enable();
           return;
         }
+        if (state.isPinching) return;
         event.preventDefault();
-        brushLayer.style.pointerEvents = "auto";
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         map.dragging.disable();
@@ -1639,13 +1640,13 @@
       }
 
       function moveBrush(event) {
-        if (!state.isBrushing) return;
         if (event.touches && event.touches.length > 1) {
+          state.isPinching = true;
           state.isBrushing = false;
-          brushLayer.style.pointerEvents = "none";
           map.dragging.enable();
           return;
         }
+        if (!state.isBrushing || state.isPinching) return;
         event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
@@ -1653,7 +1654,14 @@
         if (state.brushLine) state.brushLine.setLatLngs(state.brushLatLngs);
       }
 
-      function endBrush() {
+      function endBrush(event) {
+        const remainTouches = event?.touches?.length || 0;
+        if (remainTouches > 0) return;
+        if (state.isPinching) {
+          state.isPinching = false;
+          map.dragging.enable();
+          return;
+        }
         if (!state.isBrushing) return;
         state.isBrushing = false;
         map.dragging.enable();
@@ -1664,31 +1672,31 @@
         if (!state.personalizationMode) return;
         const touches = event.touches ? event.touches.length : 0;
         if (touches < 2) {
-          brushLayer.style.pointerEvents = "auto";
+          state.isPinching = false;
         }
       }
 
       window.addEventListener("touchstart", (event) => {
         if (!state.personalizationMode) return;
         if (event.touches && event.touches.length > 1) {
+          state.isPinching = true;
           state.isBrushing = false;
-          brushLayer.style.pointerEvents = "none";
         }
       }, { passive: true });
 
       brushLayer.addEventListener("touchstart", startBrush, { passive: false });
       brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
       brushLayer.addEventListener("touchend", (event) => {
-        endBrush();
+        endBrush(event);
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
       brushLayer.addEventListener("touchcancel", (event) => {
-        endBrush();
+        endBrush(event);
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
       brushLayer.addEventListener("mousedown", startBrush);
       brushLayer.addEventListener("mousemove", moveBrush);
-      window.addEventListener("mouseup", endBrush);
+      window.addEventListener("mouseup", () => endBrush());
       window.addEventListener("touchend", restoreBrushLayerIfNeeded, { passive: true });
       window.addEventListener("touchcancel", restoreBrushLayerIfNeeded, { passive: true });
 
