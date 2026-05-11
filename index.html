@@ -1759,13 +1759,24 @@
           ? matchedByPosition.rule
           : null;
 
+        const hasNightContext = ["밤", "야간", "늦은 시간", "어두워"].some((word) => text.includes(word));
+
+        let message = matched?.message || "이 구간에 대한 개인 선호를 저장할게요.";
+        let tags = matched?.tags || ["#개인선호", "#사용자기억"];
+
+        if (matched?.type === "risk" && hasNightContext) {
+          message = "이 구간은 과거의 위험 경험으로 인해 야간 주행 시 회피하고 싶은 구간으로 기억할게요.";
+          tags = ["#사고경험", "#야간회피", "#개인위험기억"];
+        }
+
         return {
           destination: destinationInput.value.trim() || "현재 목적지",
-          message: matched?.message || "이 구간에 대한 개인 선호를 저장할게요.",
-          tags: matched?.tags || ["#개인선호", "#사용자기억"],
+          message,
+          tags,
           preferenceType: matched?.preferenceType || state.tagMode,
           ruleType: matched?.type || "default",
           raw: text,
+          condition: hasNightContext ? "야간 주행 시" : "상시",
         };
       }
 
@@ -1773,7 +1784,7 @@
         const modeText = intent.preferenceType === "prefer" ? "선호" : "회피";
         summaryText.textContent = intent.message;
         reasonChip.textContent = intent.tags.join(" ");
-        delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
+        delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 ${intent.condition} 선택 구간 ${modeText}`;
         ruleDetailText.textContent = `입력 원문: "${intent.raw}"`;
         doneText.textContent = summaryText.textContent;
       }
