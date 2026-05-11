@@ -397,9 +397,12 @@
         max-height: 34vh;
       }
 
-      #app.ui-select .bottom-area,
       #app.ui-done .bottom-area {
         max-height: 50vh;
+      }
+
+      #app.ui-select .bottom-area {
+        max-height: 64vh;
       }
 
       #app.ui-confirm .bottom-area {
@@ -625,6 +628,26 @@
       }
 
 
+
+      #state-select {
+        max-height: calc(64vh - 24px);
+        overflow-y: auto;
+        padding-bottom: 12px;
+      }
+
+      #state-select .sheet-sub {
+        margin-bottom: 10px;
+      }
+
+      #state-select .guide-card {
+        margin-bottom: 10px;
+        padding: 12px;
+      }
+
+      #state-select .tag-section-desc {
+        margin-bottom: 8px;
+      }
+
       .tag-section-title {
         font-size: 17px;
         font-weight: 800;
@@ -640,15 +663,16 @@
 
       .quick-tag-grid {
         display: grid;
-        gap: 10px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
       }
 
       .quick-tag-btn {
         width: 100%;
         text-align: left;
         border: none;
-        border-radius: 18px;
-        padding: 14px;
+        border-radius: 16px;
+        padding: 12px;
         background: #ffffff;
         border: 1px solid #dde5f2;
         box-shadow: 0 6px 14px rgba(30, 43, 69, 0.08);
@@ -671,6 +695,10 @@
 
       .detail-tag-btn strong { display:block; font-size:17px; color:#1846a5; margin-bottom:6px; }
       .detail-tag-btn span { font-size:14px; color:#4d5f7d; line-height:1.45; }
+
+      @media (max-width: 385px) {
+        .quick-tag-grid { grid-template-columns: 1fr; }
+      }
 
       .textarea-wrap {
         background: #f7f8fb;
