@@ -691,6 +691,7 @@
       .quick-tag-btn span { font-size:14px; color:#687284; line-height:1.4; }
       .quick-tag-btn.avoid { border-color: #d9dee8; background: #f7f9fc; }
       .quick-tag-btn.prefer { border-color: #d9dee8; background: #f7f9fc; }
+      .quick-tag-btn.active { border-color:#2d6df6; box-shadow:0 0 0 2px rgba(45,109,246,0.16); background:#eef4ff; }
 
       .detail-tag-btn {
         width: 100%;
@@ -1241,11 +1242,12 @@
                   <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>회피 구간으로 저장</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
                   <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>선호 구간으로 저장</strong><span>가능하면 이 구간을 포함해 안내</span></button>
                 </div>
+                <button class="primary-btn" id="quickConfirmBtn" style="margin-top:10px; width:100%;">확인</button>
               </div>
               <div class="guide-card" style="margin-bottom:10px;">
                 <h4 class="tag-section-title">상세 태깅</h4>
                 <p class="tag-section-desc">이유와 상황까지 함께 저장하면 더 정확하게 반영돼요.</p>
-                <button class="detail-tag-btn" id="detailTagBtn"><strong>이유와 조건 추가하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해 / 예전에 사고 날 뻔했어</span></button>
+                <button class="detail-tag-btn" id="detailTagBtn"><strong>구체적으로 구간 태깅하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해 / 예전에 사고 날 뻔했어</span></button>
               </div>
             </div>
 
@@ -1727,6 +1729,9 @@
         }
 
         selectedSegmentText.textContent = describeSelectedSegment(state.selectedLatLngs);
+        quickPreferenceChoice = null;
+        document.getElementById("quickAvoidBtn")?.classList.remove("active");
+        document.getElementById("quickPreferBtn")?.classList.remove("active");
         setUI(UI_STATE.SELECT);
         showToast("문질러 선택한 영역을 AI가 보정해서 태깅 대상으로 잡았어요.");
       }
@@ -2100,19 +2105,34 @@
         showToast("안내를 시작합니다. 좌측 AI 버튼으로 구간 태깅 모드를 켤 수 있어요.", 2600);
       });
 
-      function quickTagAndContinue(preferenceType) {
+      let quickPreferenceChoice = null;
+      const quickAvoidBtn = document.getElementById("quickAvoidBtn");
+      const quickPreferBtn = document.getElementById("quickPreferBtn");
+      const quickConfirmBtn = document.getElementById("quickConfirmBtn");
+
+      function setQuickPreference(type) {
+        quickPreferenceChoice = type;
+        quickAvoidBtn.classList.toggle("active", type === "avoid");
+        quickPreferBtn.classList.toggle("active", type === "prefer");
+      }
+
+      function quickTagAndContinue() {
         if (!state.selectedCenter) {
           showToast("태깅할 구간을 먼저 선택해 주세요.");
           return;
         }
-        state.tagMode = preferenceType;
+        if (!quickPreferenceChoice) {
+          showToast("회피 또는 선호를 먼저 선택해 주세요.");
+          return;
+        }
+        state.tagMode = quickPreferenceChoice;
         state.activeIntent = {
           destination: destinationInput.value.trim() || "현재 목적지",
-          message: preferenceType === "prefer"
+          message: quickPreferenceChoice === "prefer"
             ? "이 구간은 선호 구간으로 빠르게 저장할게요."
             : "이 구간은 회피 구간으로 빠르게 저장할게요.",
-          tags: preferenceType === "prefer" ? ["#선호구간", "#빠른저장"] : ["#회피구간", "#빠른저장"],
-          preferenceType,
+          tags: quickPreferenceChoice === "prefer" ? ["#선호구간", "#빠른저장"] : ["#회피구간", "#빠른저장"],
+          preferenceType: quickPreferenceChoice,
           ruleType: "quick",
           raw: "빠른 태깅",
           condition: "상시",
@@ -2121,8 +2141,9 @@
         setUI(UI_STATE.CONFIRM);
       }
 
-      document.getElementById("quickAvoidBtn").addEventListener("click", () => quickTagAndContinue("avoid"));
-      document.getElementById("quickPreferBtn").addEventListener("click", () => quickTagAndContinue("prefer"));
+      quickAvoidBtn.addEventListener("click", () => setQuickPreference("avoid"));
+      quickPreferBtn.addEventListener("click", () => setQuickPreference("prefer"));
+      quickConfirmBtn.addEventListener("click", quickTagAndContinue);
 
       document.getElementById("detailTagBtn").addEventListener("click", () => {
         setUI(UI_STATE.INPUT);
