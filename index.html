@@ -80,7 +80,7 @@
       }
 
       .brush-layer.active {
-        pointer-events: none;
+        pointer-events: auto;
       }
 
       .map-dim {
@@ -1608,6 +1608,7 @@
         }
         state.personalizationMode = true;
         resetSelection(true);
+        brushLayer.style.pointerEvents = "auto";
         setUI(UI_STATE.ROUTE);
         showToast("태깅할 구간을 선택해 주세요. 지도 위를 문질러 영역을 그리면 돼요.", 2600);
       }
@@ -1621,6 +1622,7 @@
           return;
         }
         event.preventDefault();
+        brushLayer.style.pointerEvents = "auto";
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         map.dragging.disable();
@@ -1674,14 +1676,13 @@
         }
       }, { passive: true });
 
-      const mapContainer = map.getContainer();
-      mapContainer.addEventListener("touchstart", startBrush, { passive: false, capture: true });
-      mapContainer.addEventListener("touchmove", moveBrush, { passive: false, capture: true });
-      mapContainer.addEventListener("touchend", (event) => {
+      brushLayer.addEventListener("touchstart", startBrush, { passive: false });
+      brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
+      brushLayer.addEventListener("touchend", (event) => {
         endBrush();
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
-      mapContainer.addEventListener("touchcancel", (event) => {
+      brushLayer.addEventListener("touchcancel", (event) => {
         endBrush();
         restoreBrushLayerIfNeeded(event);
       }, { passive: false });
