@@ -1113,10 +1113,9 @@
 
             <div class="state-panel" id="state-select">
               <h3 class="sheet-title">선택한 구간을 태깅할까요?</h3>
-              <p class="sheet-sub">우측의 AI 버튼으로 개인화 모드를 켠 뒤, 지도 위를 문질러 영역을 그리면 AI가 보정해 해당 영역을 태깅합니다.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
-                <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">한남 IC 주변 구간</div>
+                <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
               <div class="dual-actions" style="margin-bottom:10px;">
                 <button class="inline-btn" id="avoidModeBtn">회피 구간</button>
@@ -1469,9 +1468,9 @@
 
       function describeSelectedSegment(chunk) {
         if (state.tagMode === "prefer") {
-          return `AI 보정 선호 영역 · 반경 약 ${Math.round(state.selectedRadiusM)}m`;
+          return `AI 보정 영역 · 반경 약 ${Math.round(state.selectedRadiusM)}m`;
         }
-        return `AI 보정 회피 영역 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
+        return `AI 보정 영역 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
       }
 
       function updateRouteCards(route) {
