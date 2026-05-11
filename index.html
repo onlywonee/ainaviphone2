@@ -624,6 +624,54 @@
         font-weight: 700;
       }
 
+
+      .tag-section-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #1f2530;
+        margin: 2px 0 6px;
+      }
+
+      .tag-section-desc {
+        font-size: 14px;
+        color: #667080;
+        margin: 0 0 10px;
+      }
+
+      .quick-tag-grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .quick-tag-btn {
+        width: 100%;
+        text-align: left;
+        border: none;
+        border-radius: 18px;
+        padding: 14px;
+        background: #ffffff;
+        border: 1px solid #dde5f2;
+        box-shadow: 0 6px 14px rgba(30, 43, 69, 0.08);
+      }
+
+      .quick-tag-btn strong { display:block; font-size:17px; color:#1f2530; margin-bottom:4px; }
+      .quick-tag-btn span { font-size:14px; color:#687284; line-height:1.4; }
+      .quick-tag-btn.avoid { border-color: #f3bfd8; background: #fff6fb; }
+      .quick-tag-btn.prefer { border-color: #b8eccc; background: #f4fff8; }
+
+      .detail-tag-btn {
+        width: 100%;
+        text-align: left;
+        border: none;
+        border-radius: 18px;
+        padding: 16px;
+        background: linear-gradient(135deg, #ebf3ff 0%, #f7f0ff 100%);
+        border: 1px solid #cfe0ff;
+      }
+
+      .detail-tag-btn strong { display:block; font-size:17px; color:#1846a5; margin-bottom:6px; }
+      .detail-tag-btn span { font-size:14px; color:#4d5f7d; line-height:1.45; }
+
       .textarea-wrap {
         background: #f7f8fb;
         border-radius: 18px;
@@ -1134,18 +1182,24 @@
             </div>
 
             <div class="state-panel" id="state-select">
-              <h3 class="sheet-title">선택한 구간을 태깅할까요?</h3>
+              <h3 class="sheet-title">선택한 구간을 어떻게 기억할까요?</h3>
+              <p class="sheet-sub">이 구간에 대한 선호를 빠르게 저장하거나, 이유와 조건을 함께 기록할 수 있어요.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
                 <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
-              <div class="dual-actions" style="margin-bottom:10px;">
-                <button class="inline-btn" id="avoidModeBtn">회피 구간</button>
-                <button class="secondary-btn" id="preferModeBtn">선호 구간</button>
+              <div class="guide-card">
+                <h4 class="tag-section-title">빠른 태깅</h4>
+                <p class="tag-section-desc">선호 여부만 간단히 저장해요.</p>
+                <div class="quick-tag-grid">
+                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>회피 구간으로 저장</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
+                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>선호 구간으로 저장</strong><span>가능하면 이 구간을 포함해 안내</span></button>
+                </div>
               </div>
-              <div class="dual-actions">
-                <button class="inline-btn" id="selectCancelBtn">취소</button>
-                <button class="primary-btn" id="selectConfirmBtn">태깅하기</button>
+              <div class="guide-card" style="margin-bottom:10px;">
+                <h4 class="tag-section-title">상세 태깅</h4>
+                <p class="tag-section-desc">이유와 상황까지 함께 저장하면 더 정확하게 반영돼요.</p>
+                <button class="detail-tag-btn" id="detailTagBtn"><strong>이유와 조건 추가하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해 / 예전에 사고 날 뻔했어</span></button>
               </div>
             </div>
 
@@ -1306,8 +1360,6 @@
       const tagListSheet = document.getElementById("tagListSheet");
       const tagListBody = document.getElementById("tagListBody");
       const bottomNav = document.querySelector(".bottom-nav");
-      const avoidModeBtn = document.getElementById("avoidModeBtn");
-      const preferModeBtn = document.getElementById("preferModeBtn");
       const aiIntroBubble = document.getElementById("aiIntroBubble");
       const aiIntroCloseBtn = document.getElementById("aiIntroCloseBtn");
 
@@ -1955,13 +2007,6 @@
         );
       }
 
-      function updateTagModeUI() {
-        const avoidActive = state.tagMode === "avoid";
-        avoidModeBtn.classList.toggle("secondary-btn", avoidActive);
-        avoidModeBtn.classList.toggle("inline-btn", !avoidActive);
-        preferModeBtn.classList.toggle("secondary-btn", !avoidActive);
-        preferModeBtn.classList.toggle("inline-btn", avoidActive);
-      }
 
       document.getElementById("startGuideBtn").addEventListener("click", () => {
         if (!state.baseRoute?.length) {
@@ -1971,14 +2016,31 @@
         showToast("안내를 시작합니다. 좌측 AI 버튼으로 구간 태깅 모드를 켤 수 있어요.", 2600);
       });
 
-      document.getElementById("selectCancelBtn").addEventListener("click", () => {
-        resetSelection();
-        map.dragging.enable();
-        setUI(UI_STATE.ROUTE);
-        showToast("구간 선택을 취소했어요.");
-      });
+      function quickTagAndContinue(preferenceType) {
+        if (!state.selectedCenter) {
+          showToast("태깅할 구간을 먼저 선택해 주세요.");
+          return;
+        }
+        state.tagMode = preferenceType;
+        state.activeIntent = {
+          destination: destinationInput.value.trim() || "현재 목적지",
+          message: preferenceType === "prefer"
+            ? "이 구간은 선호 구간으로 빠르게 저장할게요."
+            : "이 구간은 회피 구간으로 빠르게 저장할게요.",
+          tags: preferenceType === "prefer" ? ["#선호구간", "#빠른저장"] : ["#회피구간", "#빠른저장"],
+          preferenceType,
+          ruleType: "quick",
+          raw: "빠른 태깅",
+          condition: "상시",
+        };
+        renderRule(state.activeIntent);
+        setUI(UI_STATE.CONFIRM);
+      }
 
-      document.getElementById("selectConfirmBtn").addEventListener("click", () => {
+      document.getElementById("quickAvoidBtn").addEventListener("click", () => quickTagAndContinue("avoid"));
+      document.getElementById("quickPreferBtn").addEventListener("click", () => quickTagAndContinue("prefer"));
+
+      document.getElementById("detailTagBtn").addEventListener("click", () => {
         setUI(UI_STATE.INPUT);
       });
 
@@ -1994,8 +2056,7 @@
         }
         state.activeIntent = parseUserIntent(text);
         state.tagMode = state.activeIntent.preferenceType;
-        updateTagModeUI();
-        renderRule(state.activeIntent);
+          renderRule(state.activeIntent);
         setUI(UI_STATE.CONFIRM);
       });
 
@@ -2041,17 +2102,6 @@
         showToast("홈 화면으로 돌아왔어요.");
       });
 
-      avoidModeBtn.addEventListener("click", () => {
-        state.tagMode = "avoid";
-        updateTagModeUI();
-        if (state.brushLatLngs.length) highlightSelectionFromBrush();
-      });
-
-      preferModeBtn.addEventListener("click", () => {
-        state.tagMode = "prefer";
-        updateTagModeUI();
-        if (state.brushLatLngs.length) highlightSelectionFromBrush();
-      });
 
       document.getElementById("voiceBtn").addEventListener("click", () => {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2134,7 +2184,6 @@
       setUI(UI_STATE.ROUTE);
       syncSimpleSearchActions();
       setRouteStage(false);
-      updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
 
