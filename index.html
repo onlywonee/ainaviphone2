@@ -796,8 +796,8 @@
 
       .ai-intro-bubble {
         position: absolute;
-        left: 22px;
-        bottom: calc(100% + 10px);
+        left: 0;
+        bottom: calc(100% + 8px);
         z-index: 30;
         display: flex;
         align-items: center;
@@ -814,7 +814,7 @@
       .ai-intro-bubble::after {
         content: "";
         position: absolute;
-        left: 26px;
+        left: 22px;
         bottom: -8px;
         width: 14px;
         height: 14px;
@@ -1177,6 +1177,10 @@
       </section>
 
       <div class="floating-left-tools" id="mapTools">
+        <div class="ai-intro-bubble hidden" id="aiIntroBubble">
+          <span>이 구간에 대한 나만의 주행 선호를 기억해요</span>
+          <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
+        </div>
         <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 개인화 모드">
           <span class="ai-text">AI</span>
         </button>
@@ -1194,10 +1198,6 @@
       </section>
 
       <div class="bottom-area">
-        <div class="ai-intro-bubble hidden" id="aiIntroBubble">
-          <span>좌측 AI 버튼으로 구간 태깅 시작</span>
-          <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
-        </div>
         <section class="sheet">
           <div class="sheet-card">
             <div class="sheet-handle"></div>
