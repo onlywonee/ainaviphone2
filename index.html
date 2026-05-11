@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>아이폰 16용 구간 태깅 내비게이션 프로토타입</title>
     <link
@@ -1381,6 +1381,7 @@
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
         if (brushActive) {
+          map.touchZoom.enable();
           map.dragging.enable();
         } else {
           map.touchZoom.enable();
@@ -1653,7 +1654,7 @@
           return;
         }
         if (state.isPinching) return;
-        event.preventDefault();
+        if (event.cancelable) event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         map.dragging.disable();
@@ -1677,7 +1678,7 @@
           return;
         }
         if (!state.isBrushing || state.isPinching) return;
-        event.preventDefault();
+        if (event.cancelable) event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.brushLatLngs.push([latlng.lat, latlng.lng]);
@@ -2109,7 +2110,7 @@
       });
       destinationInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-          event.preventDefault();
+          if (event.cancelable) event.preventDefault();
           buildRouteFromSearch();
         }
       });
