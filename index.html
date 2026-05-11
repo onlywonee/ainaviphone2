@@ -2186,25 +2186,6 @@
         showToast("홈 화면으로 돌아왔어요.");
       });
 
-      let sheetTouchStartY = null;
-      const sheetHandleEl = document.querySelector(".sheet-handle");
-      if (sheetHandleEl) {
-        sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
-        });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
-      }
-
       document.getElementById("voiceBtn").addEventListener("click", () => {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SR) {
