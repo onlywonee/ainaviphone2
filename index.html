@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>아이폰 16용 구간 태깅 내비게이션 프로토타입</title>
     <link
@@ -292,6 +292,20 @@
         gap: 12px;
       }
 
+      .floating-right-tools {
+        position: absolute;
+        right: 16px;
+        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        z-index: 24;
+        display: grid;
+        gap: 12px;
+      }
+
+      .loc-tool {
+        font-size: 24px;
+        color: #4d78d8;
+      }
+
       .tool-fab {
         width: 58px;
         height: 58px;
@@ -384,9 +398,12 @@
       }
 
       #app.ui-select .bottom-area,
-      #app.ui-confirm .bottom-area,
       #app.ui-done .bottom-area {
         max-height: 50vh;
+      }
+
+      #app.ui-confirm .bottom-area {
+        max-height: 66vh;
       }
 
       #app.ui-input .bottom-area {
@@ -556,7 +573,8 @@
         display: block;
       }
 
-      #state-input .dual-actions {
+      #state-input .dual-actions,
+      #state-confirm .dual-actions {
         position: sticky;
         bottom: 0;
         background: linear-gradient(to top, rgba(251, 252, 254, 0.98) 75%, rgba(251, 252, 254, 0));
@@ -1070,6 +1088,10 @@
         <button class="tool-fab">★</button>
       </div>
 
+      <div class="floating-right-tools" id="mapQuickTools">
+        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동">◎</button>
+      </div>
+
       <div class="helper-toast" id="helperToast"></div>
       <section class="tag-list-sheet hidden" id="tagListSheet">
         <strong style="display:block; margin-bottom:8px; font-size:15px; color:#242a33;">나의 태깅</strong>
@@ -1113,10 +1135,9 @@
 
             <div class="state-panel" id="state-select">
               <h3 class="sheet-title">선택한 구간을 태깅할까요?</h3>
-              <p class="sheet-sub">우측의 AI 버튼으로 개인화 모드를 켠 뒤, 지도 위를 문질러 영역을 그리면 AI가 보정해 해당 영역을 태깅합니다.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
-                <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">한남 IC 주변 구간</div>
+                <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
               <div class="dual-actions" style="margin-bottom:10px;">
                 <button class="inline-btn" id="avoidModeBtn">회피 구간</button>
@@ -1148,15 +1169,24 @@
             </div>
 
             <div class="state-panel" id="state-confirm">
-              <h3 class="sheet-title">AI가 이렇게 이해했어요</h3>
-              <p class="sheet-sub" id="summaryText">이 구간에 대한 개인 선호를 저장할게요.</p>
-              <div class="chip-row">
-                <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
-                <div class="info-chip" id="delayChip">적용 조건: 선택 구간 + 현재 목적지</div>
+              <h3 class="sheet-title">AI가 이해한 내용</h3>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
+                <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
               </div>
               <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문 / 적용 규칙</strong>
-                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: "" · 적용: 목적지 이동 시 선택 구간에 개인 선호 반영</div>
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
+                <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
+              </div>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">생성된 태그</strong>
+                <div class="chip-row">
+                  <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
+                </div>
+              </div>
+              <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문</strong>
+                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
               </div>
               <div class="dual-actions" style="margin-bottom:10px;">
                 <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
@@ -1351,6 +1381,7 @@
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
         if (brushActive) {
+          map.touchZoom.enable();
           map.dragging.enable();
         } else {
           map.touchZoom.enable();
@@ -1469,9 +1500,9 @@
 
       function describeSelectedSegment(chunk) {
         if (state.tagMode === "prefer") {
-          return `AI 보정 선호 영역 · 반경 약 ${Math.round(state.selectedRadiusM)}m`;
+          return `AI 보정 영역 · 반경 약 ${Math.round(state.selectedRadiusM)}m`;
         }
-        return `AI 보정 회피 영역 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
+        return `AI 보정 영역 · 약 ${Math.max(180, Math.round(chunk.length * 12))}m`;
       }
 
       function updateRouteCards(route) {
@@ -1623,7 +1654,7 @@
           return;
         }
         if (state.isPinching) return;
-        event.preventDefault();
+        if (event.cancelable) event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         map.dragging.disable();
@@ -1647,7 +1678,7 @@
           return;
         }
         if (!state.isBrushing || state.isPinching) return;
-        event.preventDefault();
+        if (event.cancelable) event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.brushLatLngs.push([latlng.lat, latlng.lng]);
@@ -1737,15 +1768,38 @@
           },
         ];
 
-        const matched = rules.find((rule) => rule.keywords.some((word) => text.includes(word)));
+        const matchedByPosition = rules
+          .map((rule) => {
+            const firstIndex = rule.keywords
+              .map((word) => text.indexOf(word))
+              .filter((index) => index >= 0)
+              .sort((a, b) => a - b)[0];
+            return { rule, firstIndex: Number.isInteger(firstIndex) ? firstIndex : Infinity };
+          })
+          .sort((a, b) => a.firstIndex - b.firstIndex)[0];
+
+        const matched = matchedByPosition && Number.isFinite(matchedByPosition.firstIndex)
+          ? matchedByPosition.rule
+          : null;
+
+        const hasNightContext = ["밤", "야간", "늦은 시간", "어두워"].some((word) => text.includes(word));
+
+        let message = matched?.message || "이 구간에 대한 개인 선호를 저장할게요.";
+        let tags = matched?.tags || ["#개인선호", "#사용자기억"];
+
+        if (matched?.type === "risk" && hasNightContext) {
+          message = "이 구간은 과거의 위험 경험으로 인해 야간 주행 시 회피하고 싶은 구간으로 기억할게요.";
+          tags = ["#사고경험", "#야간회피", "#개인위험기억"];
+        }
 
         return {
           destination: destinationInput.value.trim() || "현재 목적지",
-          message: matched?.message || "이 구간에 대한 개인 선호를 저장할게요.",
-          tags: matched?.tags || ["#개인선호", "#사용자기억"],
+          message,
+          tags,
           preferenceType: matched?.preferenceType || state.tagMode,
           ruleType: matched?.type || "default",
           raw: text,
+          condition: hasNightContext ? "야간 주행 시" : "상시",
         };
       }
 
@@ -1753,8 +1807,8 @@
         const modeText = intent.preferenceType === "prefer" ? "선호" : "회피";
         summaryText.textContent = intent.message;
         reasonChip.textContent = intent.tags.join(" ");
-        delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
-        ruleDetailText.textContent = `입력 원문: "${intent.raw}" · 적용: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
+        delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 ${intent.condition} 선택 구간 ${modeText}`;
+        ruleDetailText.textContent = `입력 원문: "${intent.raw}"`;
         doneText.textContent = summaryText.textContent;
       }
 
@@ -1876,7 +1930,7 @@
         }
       }
 
-      function requestCurrentLocation(focus = true) {
+      function requestCurrentLocation(recenter = true) {
         if (!navigator.geolocation) {
           showToast("브라우저 위치 기능을 사용할 수 없습니다.", 2200);
           originInput.value = "위치 권한 없음";
@@ -1887,8 +1941,8 @@
           (pos) => {
             const latlng = [pos.coords.latitude, pos.coords.longitude];
             renderUserLocation(latlng, pos.coords.accuracy || 40);
-            if (!focus) {
-              map.setView(latlng, map.getZoom(), { animate: true });
+            if (recenter) {
+              map.panTo(latlng, { animate: true });
             }
             showToast("현재 위치를 기준으로 지도를 표시합니다.", 1800);
           },
@@ -2056,7 +2110,7 @@
       });
       destinationInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-          event.preventDefault();
+          if (event.cancelable) event.preventDefault();
           buildRouteFromSearch();
         }
       });
@@ -2083,6 +2137,10 @@
       updateTagModeUI();
       clearCurrentRoute();
       requestCurrentLocation(true);
+
+      document.getElementById("myLocationBtn").addEventListener("click", () => {
+        requestCurrentLocation(true);
+      });
       updateRouteTitleOrder();
       showToast("현재 위치를 불러왔어요. 목적지 검색 후 좌측 AI 버튼으로 태깅을 시작하세요.", 2800);
     </script>
