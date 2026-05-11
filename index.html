@@ -1148,19 +1148,19 @@
             </div>
 
             <div class="state-panel" id="state-confirm">
-              <h3 class="sheet-title">이렇게 태깅할까요?</h3>
-              <p class="sheet-sub" id="summaryText">국민대학교 갈 때 - 도착 시간 차이가 8분 이하라면 이 구간은 피하고 성수대로로 우회합니다.</p>
+              <h3 class="sheet-title">AI가 이렇게 이해했어요</h3>
+              <p class="sheet-sub" id="summaryText">이 구간에 대한 개인 선호를 저장할게요.</p>
               <div class="chip-row">
-                <div class="info-chip" id="reasonChip">악취/혼잡 회피</div>
-                <div class="info-chip" id="delayChip">8분 이하 우회 허용</div>
+                <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
+                <div class="info-chip" id="delayChip">적용 조건: 선택 구간 + 현재 목적지</div>
               </div>
               <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 방식</strong>
-                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">목적지가 국민대학교일 때 해당 구간을 회피합니다.</div>
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문 / 적용 규칙</strong>
+                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: "" · 적용: 목적지 이동 시 선택 구간에 개인 선호 반영</div>
               </div>
               <div class="dual-actions" style="margin-bottom:10px;">
-                <button class="inline-btn" id="confirmBackBtn">다시 입력</button>
-                <button class="primary-btn" id="saveTagBtn">구간 태깅 추가하기</button>
+                <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
+                <button class="primary-btn" id="saveTagBtn">이대로 기억하기</button>
               </div>
             </div>
 
@@ -1692,31 +1692,69 @@
       window.addEventListener("mouseup", () => endBrush());
 
       function parseUserIntent(text) {
-        const delayMatch = text.match(/(\d+)\s*분/);
-        const delay = delayMatch ? parseInt(delayMatch[1], 10) : 8;
-        let reason = "혼잡 회피";
-        let action = "대체 경로로 우회";
+        const rules = [
+          {
+            type: "risk",
+            keywords: ["사고", "접촉사고", "위험", "놀랐", "무서웠", "아찔", "급정거"],
+            message: "이 구간은 과거의 위험 경험으로 인해 회피 선호가 있는 구간으로 기억할게요.",
+            tags: ["#사고경험", "#회피선호", "#주의구간"],
+            preferenceType: "avoid",
+          },
+          {
+            type: "fear",
+            keywords: ["무서워", "어두워", "불안", "밤", "혼자", "외져"],
+            message: "이 구간은 심리적 불안감이 높은 구간으로 기억할게요.",
+            tags: ["#야간회피", "#불안구간", "#혼자운전"],
+            preferenceType: "avoid",
+          },
+          {
+            type: "emotional",
+            keywords: ["싫어", "불편", "기분 안 좋아", "생각나", "전남친", "병원", "예전"],
+            message: "이 구간은 개인적인 감정 경험으로 인해 회피하고 싶은 구간으로 기억할게요.",
+            tags: ["#감정기억", "#회피선호", "#개인맥락"],
+            preferenceType: "avoid",
+          },
+          {
+            type: "physical",
+            keywords: ["멀미", "어지러워", "울렁", "피곤", "토할 것 같아"],
+            message: "이 구간은 신체적 불편감을 유발하는 구간으로 기억할게요.",
+            tags: ["#멀미구간", "#신체불편", "#회피선호"],
+            preferenceType: "avoid",
+          },
+          {
+            type: "scenery",
+            keywords: ["예뻐", "벚꽃", "한강", "야경", "풍경", "분위기", "드라이브"],
+            message: "이 구간은 긍정적인 분위기와 경관 선호가 있는 구간으로 기억할게요.",
+            tags: ["#경관선호", "#기분전환", "#선호구간"],
+            preferenceType: "prefer",
+          },
+          {
+            type: "comfort",
+            keywords: ["편해", "익숙해", "자주 가", "안정", "쉬워", "넓어"],
+            message: "이 구간은 익숙하고 편안하게 느끼는 선호 구간으로 기억할게요.",
+            tags: ["#익숙한길", "#운전편의", "#선호구간"],
+            preferenceType: "prefer",
+          },
+        ];
 
-        if (text.includes("냄새")) reason = "냄새/환경 회피";
-        if (text.includes("막혀") || text.includes("정체") || text.includes("차막")) reason = "정체 회피";
-        if (text.includes("복잡") || text.includes("골목")) reason = "복잡한 진입 회피";
-        if (text.includes("큰길")) action = "큰길 위주로 우회";
+        const matched = rules.find((rule) => rule.keywords.some((word) => text.includes(word)));
 
         return {
           destination: destinationInput.value.trim() || "현재 목적지",
-          delay,
-          reason,
-          action,
+          message: matched?.message || "이 구간에 대한 개인 선호를 저장할게요.",
+          tags: matched?.tags || ["#개인선호", "#사용자기억"],
+          preferenceType: matched?.preferenceType || state.tagMode,
+          ruleType: matched?.type || "default",
           raw: text,
         };
       }
 
       function renderRule(intent) {
-        const modeText = state.tagMode === "prefer" ? "우선 통과" : "회피";
-        summaryText.textContent = `${intent.destination} 갈 때 - 도착 시간 차이가 ${intent.delay}분 이하라면 AI 보정 영역을 ${modeText}하도록 반영합니다.`;
-        reasonChip.textContent = `${intent.reason} · ${modeText}`;
-        delayChip.textContent = `${intent.delay}분 이하 개인화 적용`;
-        ruleDetailText.textContent = `목적지가 ${intent.destination}일 때, 선택한 AI 보정 영역을 ${modeText} 규칙으로 반영합니다.`;
+        const modeText = intent.preferenceType === "prefer" ? "선호" : "회피";
+        summaryText.textContent = intent.message;
+        reasonChip.textContent = intent.tags.join(" ");
+        delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
+        ruleDetailText.textContent = `입력 원문: "${intent.raw}" · 적용: 목적지 ${intent.destination} 이동 시 선택 구간 ${modeText}`;
         doneText.textContent = summaryText.textContent;
       }
 
@@ -1901,6 +1939,8 @@
           return;
         }
         state.activeIntent = parseUserIntent(text);
+        state.tagMode = state.activeIntent.preferenceType;
+        updateTagModeUI();
         renderRule(state.activeIntent);
         setUI(UI_STATE.CONFIRM);
       });
