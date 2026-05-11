@@ -1668,37 +1668,28 @@
         highlightSelectionFromBrush();
       }
 
-      function restoreBrushLayerIfNeeded(event) {
+      function handleBrushTouchEnd(event) {
         if (!state.personalizationMode) return;
         const touches = event.touches ? event.touches.length : 0;
-        if (touches < 2) {
+        if (touches >= 2) return;
+        if (touches === 1) {
           state.isPinching = false;
+          return;
         }
+        endBrush(event);
       }
-
-      window.addEventListener("touchstart", (event) => {
-        if (!state.personalizationMode) return;
-        if (event.touches && event.touches.length > 1) {
-          state.isPinching = true;
-          state.isBrushing = false;
-        }
-      }, { passive: true });
 
       brushLayer.addEventListener("touchstart", startBrush, { passive: false });
       brushLayer.addEventListener("touchmove", moveBrush, { passive: false });
       brushLayer.addEventListener("touchend", (event) => {
-        endBrush(event);
-        restoreBrushLayerIfNeeded(event);
+        handleBrushTouchEnd(event);
       }, { passive: false });
       brushLayer.addEventListener("touchcancel", (event) => {
-        endBrush(event);
-        restoreBrushLayerIfNeeded(event);
+        handleBrushTouchEnd(event);
       }, { passive: false });
       brushLayer.addEventListener("mousedown", startBrush);
       brushLayer.addEventListener("mousemove", moveBrush);
       window.addEventListener("mouseup", () => endBrush());
-      window.addEventListener("touchend", restoreBrushLayerIfNeeded, { passive: true });
-      window.addEventListener("touchcancel", restoreBrushLayerIfNeeded, { passive: true });
 
       function parseUserIntent(text) {
         const delayMatch = text.match(/(\d+)\s*분/);
