@@ -384,9 +384,12 @@
       }
 
       #app.ui-select .bottom-area,
-      #app.ui-confirm .bottom-area,
       #app.ui-done .bottom-area {
         max-height: 50vh;
+      }
+
+      #app.ui-confirm .bottom-area {
+        max-height: 66vh;
       }
 
       #app.ui-input .bottom-area {
@@ -556,7 +559,8 @@
         display: block;
       }
 
-      #state-input .dual-actions {
+      #state-input .dual-actions,
+      #state-confirm .dual-actions {
         position: sticky;
         bottom: 0;
         background: linear-gradient(to top, rgba(251, 252, 254, 0.98) 75%, rgba(251, 252, 254, 0));
@@ -1153,14 +1157,14 @@
                 <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
               </div>
               <div class="guide-card">
+                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
+                <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
+              </div>
+              <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">생성된 태그</strong>
                 <div class="chip-row">
                   <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
                 </div>
-              </div>
-              <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
-                <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
               </div>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문</strong>
