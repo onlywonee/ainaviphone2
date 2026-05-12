@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>MyRoute</title>
     <meta name="application-name" content="MyRoute" />
@@ -2088,7 +2088,26 @@
           });
 
           updateRouteCards(route);
-          setUI(UI_STATE.ROUTE);
+          let sheetTouchStartY = null;
+      const sheetHandleEl = document.querySelector(".sheet-handle");
+      if (sheetHandleEl) {
+        sheetHandleEl.addEventListener("click", () => {
+          app.classList.toggle("sheet-expanded");
+        });
+        sheetHandleEl.addEventListener("touchstart", (event) => {
+          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
+        }, { passive: true });
+        sheetHandleEl.addEventListener("touchend", (event) => {
+          const endY = event.changedTouches?.[0]?.clientY;
+          if (sheetTouchStartY == null || endY == null) return;
+          const diff = sheetTouchStartY - endY;
+          if (diff > 24) app.classList.add("sheet-expanded");
+          if (diff < -24) app.classList.remove("sheet-expanded");
+          sheetTouchStartY = null;
+        }, { passive: true });
+      }
+
+      setUI(UI_STATE.ROUTE);
           setRouteStage(true);
           searchOverlay.classList.add("hidden");
         } catch (e) {
@@ -2206,20 +2225,20 @@
       });
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
-        setUI(UI_STATE.ROUTE);
         resetSelection();
         map.dragging.enable();
         speechText.value = "";
         state.activeIntent = null;
         showToast("태깅만 저장하고 기본 경로를 유지합니다.");
+             setUI(UI_STATE.ROUTE);
       });
 
       document.getElementById("rerouteBtn").addEventListener("click", async () => {
         await applyReroute();
-        setUI(UI_STATE.ROUTE);
         resetSelection();
         map.dragging.enable();
         speechText.value = "";
+                setUI(UI_STATE.ROUTE);
       });
 
       routeBackBtn.addEventListener("click", () => {
