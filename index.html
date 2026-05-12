@@ -313,8 +313,51 @@
       }
 
       .loc-tool {
-        font-size: 24px;
-        color: #4d78d8;
+        position: relative;
+        background: #ffffff;
+        border: 1px solid rgba(20, 33, 58, 0.12);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22), 0 2px 4px rgba(0, 0, 0, 0.14);
+      }
+
+      .loc-crosshair {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid #1f67ea;
+      }
+
+      .loc-crosshair::before,
+      .loc-crosshair::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        background: #1f67ea;
+        transform: translate(-50%, -50%);
+      }
+
+      .loc-crosshair::before {
+        width: 18px;
+        height: 3px;
+        border-radius: 99px;
+      }
+
+      .loc-crosshair::after {
+        width: 3px;
+        height: 18px;
+        border-radius: 99px;
+      }
+
+      .loc-crosshair i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #1f67ea;
+        transform: translate(-50%, -50%);
       }
 
       .tool-fab {
@@ -1199,7 +1242,7 @@
       </div>
 
       <div class="floating-right-tools" id="mapQuickTools">
-        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동">◎</button>
+        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동"><span class="loc-crosshair" aria-hidden="true"><i></i></span></button>
       </div>
 
       <div class="helper-toast" id="helperToast"></div>
