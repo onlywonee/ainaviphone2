@@ -320,41 +320,21 @@
       }
 
       .loc-crosshair {
-        position: relative;
-        width: 31px;
-        height: 31px;
-        border-radius: 50%;
-        border: 3px solid #1f67ea;
+        width: 32px;
+        height: 32px;
+        display: block;
       }
 
-      .loc-crosshair::before,
-      .loc-crosshair::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+      .loc-crosshair circle,
+      .loc-crosshair line,
+      .loc-crosshair path {
+        stroke: #1f67ea;
       }
 
-      .loc-crosshair::before {
-        width: 27px;
-        height: 27px;
-        border-radius: 50%;
-        background:
-          linear-gradient(#1f67ea, #1f67ea) center top / 3px 8px no-repeat,
-          linear-gradient(#1f67ea, #1f67ea) center bottom / 3px 8px no-repeat,
-          linear-gradient(#1f67ea, #1f67ea) left center / 8px 3px no-repeat,
-          linear-gradient(#1f67ea, #1f67ea) right center / 8px 3px no-repeat;
+      .loc-crosshair .dot {
+        fill: #1f67ea;
+        stroke: none;
       }
-
-      .loc-crosshair::after {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #1f67ea;
-      }
-
-      .loc-crosshair i { display:none; }
 
       .tool-fab {
         width: 58px;
@@ -1238,7 +1218,16 @@
       </div>
 
       <div class="floating-right-tools" id="mapQuickTools">
-        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동"><span class="loc-crosshair" aria-hidden="true"><i></i></span></button>
+        <button class="tool-fab loc-tool" id="myLocationBtn" aria-label="내 위치로 이동">
+          <svg class="loc-crosshair" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="11" fill="none" stroke-width="3"/>
+            <line x1="16" y1="2.5" x2="16" y2="8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="16" y1="24" x2="16" y2="29.5" stroke-width="3" stroke-linecap="round"/>
+            <line x1="2.5" y1="16" x2="8" y2="16" stroke-width="3" stroke-linecap="round"/>
+            <line x1="24" y1="16" x2="29.5" y2="16" stroke-width="3" stroke-linecap="round"/>
+            <circle class="dot" cx="16" cy="16" r="2.8"/>
+          </svg>
+        </button>
       </div>
 
       <div class="helper-toast" id="helperToast"></div>
