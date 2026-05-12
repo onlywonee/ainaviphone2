@@ -321,8 +321,8 @@
 
       .loc-crosshair {
         position: relative;
-        width: 30px;
-        height: 30px;
+        width: 31px;
+        height: 31px;
         border-radius: 50%;
         border: 3px solid #1f67ea;
       }
@@ -333,32 +333,28 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        background: #1f67ea;
         transform: translate(-50%, -50%);
       }
 
       .loc-crosshair::before {
-        width: 18px;
-        height: 3px;
-        border-radius: 99px;
+        width: 27px;
+        height: 27px;
+        border-radius: 50%;
+        background:
+          linear-gradient(#1f67ea, #1f67ea) center top / 3px 8px no-repeat,
+          linear-gradient(#1f67ea, #1f67ea) center bottom / 3px 8px no-repeat,
+          linear-gradient(#1f67ea, #1f67ea) left center / 8px 3px no-repeat,
+          linear-gradient(#1f67ea, #1f67ea) right center / 8px 3px no-repeat;
       }
 
       .loc-crosshair::after {
-        width: 3px;
-        height: 18px;
-        border-radius: 99px;
-      }
-
-      .loc-crosshair i {
-        position: absolute;
-        left: 50%;
-        top: 50%;
         width: 7px;
         height: 7px;
         border-radius: 50%;
         background: #1f67ea;
-        transform: translate(-50%, -50%);
       }
+
+      .loc-crosshair i { display:none; }
 
       .tool-fab {
         width: 58px;
