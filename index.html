@@ -6,7 +6,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>아이폰 16용 구간 태깅 내비게이션 프로토타입</title>
+    <title>MyRoute</title>
+    <meta name="application-name" content="MyRoute" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyRoute" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/myroute-icon.svg" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/assets/icons/myroute-icon.svg" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/myroute-icon.svg" />
+    <link rel="apple-touch-startup-image" href="/assets/splash/iphone16-splash.svg" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -89,7 +100,7 @@
         background: rgba(10, 12, 18, 0.05);
         pointer-events: none;
         z-index: 2;
-        transition: background 0.25s ease;
+        transition: background 0.32s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       .map-dim.active {
@@ -2205,7 +2216,6 @@
         searchOverlay.classList.remove("hidden");
         destinationInput.value = "";
         showToast("홈 화면으로 돌아왔어요.");
-                setUI(UI_STATE.ROUTE);
       });
 
       document.getElementById("voiceBtn").addEventListener("click", () => {
