@@ -807,6 +807,7 @@
         display: none;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0;
       }
 
       #state-confirm.show {
@@ -814,6 +815,8 @@
       }
 
       .confirm-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
         padding-bottom: 8px;
       }
