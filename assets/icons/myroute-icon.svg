@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="80" x2="910" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A1120"/>
+      <stop offset="0.55" stop-color="#101A30"/>
+      <stop offset="1" stop-color="#1A2340"/>
+    </linearGradient>
+    <linearGradient id="tagSeg" x1="450" y1="610" x2="710" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5CB7FF"/>
+      <stop offset="1" stop-color="#AE78FF"/>
+    </linearGradient>
+    <filter id="glowB" x="0" y="0" width="1024" height="1024"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="soft" x="0" y="0" width="1024" height="1024"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <rect x="40" y="40" width="944" height="944" rx="220" fill="url(#bg)"/>
+  <circle cx="250" cy="220" r="180" fill="#4A8DFF" fill-opacity="0.3" filter="url(#glowB)"/>
+  <circle cx="750" cy="760" r="220" fill="#9C6FFF" fill-opacity="0.26" filter="url(#glowB)"/>
+  <path d="M150 760C250 690 315 612 430 635C555 660 596 516 700 540C772 556 815 472 874 430" stroke="#B0C5F1" stroke-opacity="0.7" stroke-width="20" stroke-linecap="round"/>
+  <path d="M170 270C285 332 368 340 470 305C560 274 640 368 790 338" stroke="#B0C5F1" stroke-opacity="0.55" stroke-width="14" stroke-linecap="round"/>
+  <path d="M430 635C540 560 598 508 700 540" stroke="url(#tagSeg)" stroke-width="28" stroke-linecap="round" filter="url(#soft)"/>
+  <path d="M514 582L616 532" stroke="url(#tagSeg)" stroke-width="14" stroke-linecap="round"/>
+  <path d="M605 500V528M591 514H619" stroke="#E8F4FF" stroke-width="5" stroke-linecap="round"/>
+  <rect x="40" y="40" width="944" height="944" rx="220" stroke="white" stroke-opacity="0.12" stroke-width="4"/>
+</svg>
