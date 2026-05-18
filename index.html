@@ -316,7 +316,10 @@
         position: relative;
         width: 63px;
         height: 63px;
-        padding: 14px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: #ffffff;
         border: none;
         border-radius: 100px;
@@ -325,9 +328,10 @@
       }
 
       .loc-crosshair {
-        width: 32px;
-        height: 32px;
+        width: 35px;
+        height: 35px;
         display: block;
+        flex: 0 0 35px;
       }
 
       .loc-crosshair circle,
@@ -836,13 +840,14 @@
         z-index: 30;
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
+        gap: 6px;
+        padding: 8px 12px;
         border-radius: 14px;
         background: linear-gradient(180deg, #6458ff 0%, #2f73ff 100%);
         color: #fff;
-        font-size: 15px;
+        font-size: 12px;
         font-weight: 700;
+        white-space: nowrap;
         box-shadow: 0 10px 22px rgba(33, 56, 125, 0.32);
       }
 
