@@ -801,7 +801,31 @@
         gap: 10px;
       }
 
-      .completion-card {
+      
+      #state-confirm {
+        max-height: calc(66vh - 20px);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #state-confirm.show {
+        display: flex;
+      }
+
+      .confirm-scroll {
+        overflow-y: auto;
+        padding-bottom: 8px;
+      }
+
+      #state-confirm .dual-actions {
+        position: sticky;
+        bottom: 0;
+        margin-top: 8px;
+        padding: 10px 0 calc(env(safe-area-inset-bottom) + 6px);
+        background: linear-gradient(to top, rgba(251, 252, 254, 0.99) 76%, rgba(251, 252, 254, 0));
+      }
+.completion-card {
         text-align: center;
         padding-top: 4px;
       }
@@ -1323,25 +1347,27 @@
 
             <div class="state-panel" id="state-confirm">
               <h3 class="sheet-title">AI가 이해한 내용</h3>
-              <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
-                <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
-              </div>
-              <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
-                <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
-              </div>
-              <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">생성된 태그</strong>
-                <div class="chip-row">
-                  <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
+              <div class="confirm-scroll">
+                <div class="guide-card">
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
+                  <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
+                </div>
+                <div class="guide-card">
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">적용 조건</strong>
+                  <div id="delayChip" style="font-size:15px; line-height:1.56; color:#5f6673;">적용 조건: 선택 구간 + 현재 목적지</div>
+                </div>
+                <div class="guide-card">
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">생성된 태그</strong>
+                  <div class="chip-row">
+                    <div class="info-chip" id="reasonChip">#개인선호 #사용자기억</div>
+                  </div>
+                </div>
+                <div class="guide-card">
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문</strong>
+                  <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
                 </div>
               </div>
-              <div class="guide-card">
-                <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">입력 원문</strong>
-                <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
-              </div>
-              <div class="dual-actions" style="margin-bottom:10px;">
+              <div class="dual-actions">
                 <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
                 <button class="primary-btn" id="saveTagBtn">이대로 기억하기</button>
               </div>
