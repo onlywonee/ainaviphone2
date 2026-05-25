@@ -387,16 +387,6 @@
         stroke-linejoin: round;
       }
 
-      .tool-fab .fab-icon {
-        width: 22px;
-        height: 22px;
-        stroke: currentColor;
-        stroke-width: 1.9;
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
 
       .ai-tool {
         background: #fff;
@@ -1338,11 +1328,12 @@
         </div>
         <button class="tool-fab" aria-label="즐겨찾기">
           <svg class="fab-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m11.48 3.499-2.071 4.196-4.632.673 3.351 3.266-.792 4.613L11.48 14.07l4.143 2.177-.792-4.613 3.351-3.266-4.632-.673L11.48 3.5Z" />
+            <circle cx="12" cy="12" r="9" />
+            <path d="m12 7.25 1.46 2.96 3.27.48-2.36 2.3.56 3.25L12 14.73l-2.93 1.54.56-3.25-2.36-2.3 3.27-.48L12 7.25Z" />
           </svg>
         </button>
-        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 태깅 가능">
-          <span class="ai-text">AI 태깅 가능</span>
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI태깅">
+          <span class="ai-text">AI태깅</span>
         </button>
       </div>
 
