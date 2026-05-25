@@ -114,17 +114,17 @@
         right: 0;
         top: 0;
         z-index: 30;
-        padding: calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 18px) 0 calc(env(safe-area-inset-left) + 14px);
+        padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 0px) 0 calc(env(safe-area-inset-left) + 0px);
         pointer-events: none;
       }
 
       .route-bar {
-        background: rgba(246, 248, 251, 0.97);
-        border-radius: 24px;
-        border: 1px solid #d9dee7;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        background: rgba(246, 248, 251, 0.985);
+        border-radius: 0 0 28px 28px;
+        border: none;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
         color: #141821;
-        padding: 14px 14px 12px;
+        padding: 14px 18px 12px;
         pointer-events: auto;
         width: 100%;
         max-width: 100%;
@@ -132,19 +132,17 @@
 
       .simple-search {
         width: 100%;
-        min-height: 52px;
-        border-radius: 999px;
-        background:
-          linear-gradient(#fff, #fff) padding-box,
-          linear-gradient(92deg, #d657ff 0%, #3bc3ff 100%) border-box;
-        border: 2px solid transparent;
+        min-height: 56px;
+        border-radius: 14px;
+        background: #f7f8fa;
+        border: 1px solid #d8dde5;
         display: grid;
-        grid-template-columns: 30px 1fr 28px 28px;
+        grid-template-columns: 26px 1fr 32px;
         gap: 10px;
         align-items: center;
         padding: 0 16px;
-        font-size: 16px;
-        color: #a0a8b5;
+        font-size: 13px;
+        color: #9aa3b2;
         font-weight: 700;
       }
 
@@ -152,15 +150,22 @@
         border: none;
         outline: none;
         background: transparent;
-        font-size: 16px;
-        color: #171c24;
+        font-size: 18px;
+        color: #1f2430;
         font-weight: 700;
       }
 
       .simple-icon-btn {
         border: none;
         background: transparent;
-        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #cfd5de;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
         color: #788291;
         padding: 0;
       }
@@ -169,28 +174,28 @@
         position: absolute;
         left: 14px;
         right: 14px;
-        top: calc(env(safe-area-inset-top) + 94px);
+        top: calc(env(safe-area-inset-top) + 72px);
         z-index: 32;
         background: rgba(252, 253, 255, 0.98);
-        border-radius: 22px;
+        border-radius: 16px;
         box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
-        padding: 11px;
+        padding: 8px;
       }
 
       .search-overlay.hidden { display: none; }
 
-      .recent-title { font-size: 14px; color: #727b88; margin: 10px 4px 8px; font-weight: 700; }
+      .recent-title { font-size: 12px; color: #727b88; margin: 6px 4px; font-weight: 700; }
       .recent-item {
         width: 100%;
         border: none;
         background: #f2f5f9;
-        border-radius: 14px;
-        min-height: 44px;
+        border-radius: 10px;
+        min-height: 36px;
         text-align: left;
-        padding: 0 12px;
-        margin-bottom: 8px;
+        padding: 0 10px;
+        margin-bottom: 0;
         color: #2b313c;
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 700;
       }
 
@@ -272,6 +277,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        gap: 6px;
         height: 42px;
         border-radius: 999px;
         color: #11161e;
@@ -294,19 +300,36 @@
         color: #f45a45;
       }
 
+      .transport-tab .tab-icon,
+      .icon-btn .btn-icon,
+      .swap-btn .btn-icon {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: 0 0 auto;
+      }
+
       .floating-left-tools {
         position: absolute;
-        left: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        left: 14px;
+        right: 14px;
+        bottom: calc(env(safe-area-inset-bottom) + 336px);
         z-index: 24;
-        display: grid;
-        gap: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+        pointer-events: none;
       }
 
       .floating-right-tools {
         position: absolute;
         right: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        bottom: calc(env(safe-area-inset-bottom) + 360px);
         z-index: 24;
         display: grid;
         gap: 12px;
@@ -346,8 +369,8 @@
       }
 
       .tool-fab {
-        width: 58px;
-        height: 58px;
+        width: 66px;
+        height: 66px;
         border-radius: 50%;
         border: 1px solid rgba(37, 48, 69, 0.08);
         background: #fff;
@@ -356,18 +379,37 @@
         display: grid;
         place-items: center;
         cursor: pointer;
+        pointer-events: auto;
+      }
+
+      .tool-fab .fab-icon {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
 
       .ai-tool {
         background: #fff;
         color: #1358e8;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.02em;
         box-shadow: 0 8px 18px rgba(22, 32, 51, 0.14);
         position: relative;
         border: 1px solid rgba(37, 48, 69, 0.08);
+        width: auto;
+        min-width: 154px;
+        max-width: 154px;
+        height: 66px;
+        padding: 0 18px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+        justify-content: center;
       }
 
       .ai-tool .ai-text {
@@ -378,9 +420,17 @@
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 23px;
+        font-size: 44px;
+        transform: scale(0.52);
+        transform-origin: center;
         letter-spacing: -0.01em;
         line-height: 1;
+        white-space: nowrap;
+      }
+
+      .floating-left-tools .tool-fab:first-of-type {
+        width: 66px;
+        height: 66px;
       }
 
       .bottom-area {
@@ -417,7 +467,18 @@
         font-size: 12px;
         font-weight: 700;
       }
-      .nav-item .emo { display:block; font-size: 27px; margin-bottom: 2px; }
+      .nav-item .nav-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        margin: 0 auto 4px;
+        color: #2b3340;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
       .tag-list-sheet {
         position: absolute;
@@ -434,7 +495,7 @@
       }
 
       #app.ui-route .bottom-area {
-        max-height: 34vh;
+        max-height: 38vh;
       }
 
       #app.ui-done .bottom-area {
@@ -473,6 +534,9 @@
         overflow: hidden;
         width: 100%;
         max-width: 100%;
+        transform: translateY(0);
+        transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
       }
 
 
@@ -490,11 +554,13 @@
         border-radius: 999px;
         background: #d1d7e0;
         margin: 10px auto 10px;
+        touch-action: none;
+        cursor: grab;
       }
 
       .route-options {
         display: flex;
-        gap: 10px;
+        gap: 14px;
         overflow-x: auto;
         padding: 0 12px 10px;
         scroll-snap-type: x mandatory;
@@ -503,18 +569,18 @@
       .route-options::-webkit-scrollbar { display: none; }
 
       .route-card {
-        min-width: 144px;
-        background: #f8fafe;
-        border-radius: 24px;
-        padding: 10px;
-        border: 2px solid transparent;
-        box-shadow: inset 0 0 0 1px #e6ebf2;
+        min-width: 184px;
+        background: #fff;
+        border-radius: 25px;
+        padding: 14px 14px 12px;
+        border: 3px solid #b9b9b9;
+        box-shadow: none;
         scroll-snap-align: start;
       }
 
       .route-card.active {
-        border-color: #2e73f0;
-        box-shadow: 0 1px 0 rgba(46, 115, 240, 0.08), inset 0 0 0 1px rgba(46, 115, 240, 0.08);
+        border-color: #0066ff;
+        box-shadow: none;
       }
 
       .route-top {
@@ -531,7 +597,7 @@
         align-items: center;
         gap: 6px;
         color: var(--brand);
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 800;
         white-space: nowrap;
         overflow: hidden;
@@ -545,9 +611,9 @@
         border: 1px solid #ccd3de;
         background: #f3f6fb;
         border-radius: 16px;
-        min-width: 52px;
-        height: 38px;
-        font-size: 15px;
+        min-width: 62px;
+        height: 36px;
+        font-size: 18px;
         color: #687080;
         font-weight: 700;
         cursor: pointer;
@@ -555,23 +621,23 @@
       }
 
       .route-time {
-        font-size: 34px;
+        font-size: 58px;
         line-height: 1;
         font-weight: 800;
         letter-spacing: -0.04em;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .route-desc {
-        font-size: 14px;
-        line-height: 1.4;
-        color: #3f4550;
+        font-size: 18px;
+        line-height: 1.32;
+        color: #11151d;
       }
 
       .sheet-actions {
         display: grid;
-        grid-template-columns: 52px 1fr;
-        gap: 10px;
+        grid-template-columns: 152px 1fr;
+        gap: 14px;
         padding: 0 12px 10px;
       }
 
@@ -585,19 +651,20 @@
       }
 
       .history-btn {
-        border-radius: 18px;
-        background: #d9dde5;
+        min-height: 74px;
+        border-radius: 12px;
+        background: #8b929a;
         color: #fff;
-        font-size: 28px;
+        font-size: 18px;
       }
 
       .primary-btn {
-        min-height: 50px;
-        border-radius: 18px;
-        background: var(--brand);
+        min-height: 74px;
+        border-radius: 12px;
+        background: #0066ff;
         color: #fff;
-        font-size: 18px;
-        box-shadow: 0 12px 20px rgba(10, 102, 255, 0.24);
+        font-size: 28px;
+        box-shadow: none;
       }
 
       .secondary-btn {
@@ -865,17 +932,17 @@
 
       .ai-intro-bubble {
         position: absolute;
-        left: 0;
+        right: 0;
         bottom: calc(100% + 8px);
-        z-index: 30;
+        z-index: 26;
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 8px 12px;
-        border-radius: 14px;
+        padding: 7px 10px;
+        border-radius: 999px;
         background: linear-gradient(180deg, #6458ff 0%, #2f73ff 100%);
         color: #fff;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         white-space: nowrap;
         box-shadow: 0 10px 22px rgba(33, 56, 125, 0.32);
@@ -884,7 +951,7 @@
       .ai-intro-bubble::after {
         content: "";
         position: absolute;
-        left: 22px;
+        right: 20px;
         bottom: -8px;
         width: 14px;
         height: 14px;
@@ -1008,12 +1075,12 @@
       /* Small-phone responsive tune (iPhone viewport ratio) */
       @media (max-width: 430px), (max-height: 820px) {
         .top-wrap {
-          padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);
+          padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 0px) 0 calc(env(safe-area-inset-left) + 0px);
         }
 
         .route-bar {
-          border-radius: 22px 22px 14px 14px;
-          padding: 10px 10px 9px;
+          border-radius: 0 0 28px 28px;
+          padding: 12px 16px 11px;
         }
 
         .search-row {
@@ -1045,8 +1112,8 @@
         }
 
         .transport-tabs {
-          gap: 8px;
-          padding: 10px 8px 0;
+          gap: 16px;
+          padding: 0 4px;
         }
 
         .transport-tab {
@@ -1056,8 +1123,13 @@
 
         .floating-left-tools {
           left: 10px;
-          bottom: calc(env(safe-area-inset-bottom) + 255px);
+          right: 10px;
+          bottom: calc(env(safe-area-inset-bottom) + 292px);
           gap: 8px;
+        }
+
+        .floating-right-tools {
+          bottom: calc(env(safe-area-inset-bottom) + 334px);
         }
 
         .tool-fab {
@@ -1217,13 +1289,16 @@
       <div class="top-wrap">
         <section class="route-bar">
           <div class="simple-search">
-            <span style="font-size:18px; color:#1e232b;">‹</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;color:#1e232b;"><path d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
             <input id="simpleSearchInput" placeholder="장소, 주소 검색" />
             <button class="simple-icon-btn hidden" id="simpleClearBtn" aria-label="입력 지우기">✕</button>
-            <button class="simple-icon-btn hidden" id="simpleSearchBtn" aria-label="검색">⌕</button>
+            <button class="simple-icon-btn" id="simpleSearchBtn" aria-label="경로 옵션 추가">＋</button>
           </div>
+          <div id="searchStateHint" style="margin:6px 6px 0; font-size:12px; color:#6f7886; font-weight:600;">목적지를 검색해 경로를 시작하세요</div>
           <div class="search-row hidden" id="detailedSearchRow">
-            <button class="icon-btn" id="routeBackBtn" aria-label="뒤로가기">‹</button>
+            <button class="icon-btn" id="routeBackBtn" aria-label="뒤로가기">
+              <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+            </button>
             <div class="search-stack">
               <label class="search-field">
                 <input id="originInput" type="text" placeholder="내 위치를 확인 중..." readonly />
@@ -1232,12 +1307,22 @@
                 <input id="destinationInput" type="text" placeholder="목적지를 입력하고 Enter" />
               </label>
             </div>
-            <button class="swap-btn" id="searchBtn" aria-label="목적지 검색">⌕</button>
+            <button class="swap-btn" id="searchBtn" aria-label="목적지 검색">
+              <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35" /><circle cx="11" cy="11" r="6" /></svg>
+            </button>
           </div>
           <div class="transport-tabs hidden" id="transportTabs">
-            <div class="transport-tab active">🚗 16분</div>
-            <div class="transport-tab">🚌</div>
-            <div class="transport-tab">🚶<span class="tiny">N</span></div>
+            <div class="transport-tab active">
+              <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.25 18.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm10.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /><path d="M3.75 16.5h16.5M5.25 16.5V9.75A2.25 2.25 0 0 1 7.5 7.5h9A2.25 2.25 0 0 1 18.75 9.75v6.75M7.5 7.5l1.2-2.4A1.5 1.5 0 0 1 10.05 4.5h3.9a1.5 1.5 0 0 1 1.35.84L16.5 7.5" /></svg>
+              16분
+            </div>
+            <div class="transport-tab">
+              <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.25" y="4.5" width="13.5" height="14.25" rx="2.25" /><path d="M5.25 10.5h13.5M8.25 15.75h.008v.008H8.25zM15.75 15.75h.008v.008h-.008zM8.25 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm10.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" /></svg>
+            </div>
+            <div class="transport-tab">
+              <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.25a1.875 1.875 0 1 0 0-3.75 1.875 1.875 0 0 0 0 3.75ZM10.5 22.5l.75-6-2.25-2.25 1.5-2.25 2.25 2.25 2.25-1.5 1.5 2.25-2.25 1.5-.75 6" /></svg>
+              <span class="tiny">N</span>
+            </div>
           </div>
         </section>
       </div>
@@ -1248,13 +1333,18 @@
 
       <div class="floating-left-tools" id="mapTools">
         <div class="ai-intro-bubble hidden" id="aiIntroBubble">
-          <span>이 구간에 대한 나만의 주행 선호를 기억해요</span>
+          <span>이 구간을 기억할까요?</span>
           <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
         </div>
-        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 개인화 모드">
-          <span class="ai-text">AI</span>
+        <button class="tool-fab" aria-label="즐겨찾기">
+          <svg class="fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="m12 7.25 1.46 2.96 3.27.48-2.36 2.3.56 3.25L12 14.73l-2.93 1.54.56-3.25-2.36-2.3 3.27-.48L12 7.25Z" />
+          </svg>
         </button>
-        <button class="tool-fab">★</button>
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI태깅">
+          <span class="ai-text">AI태깅</span>
+        </button>
       </div>
 
       <div class="floating-right-tools" id="mapQuickTools">
@@ -1285,48 +1375,50 @@
               <div class="route-options">
                 <article class="route-card active">
                   <div class="route-top">
-                    <div class="route-title" id="primaryRouteTitle">추천 경로</div>
+                    <div class="route-title" id="primaryRouteTitle">기본 추천 경로</div>
                     <button class="small-btn">상세</button>
                   </div>
-                  <div class="route-time">16분</div>
-                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                  <div class="route-time">24분</div>
+                  <div class="route-desc">오후 3:34 도착</div>
+                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
                 <article class="route-card">
                   <div class="route-top">
-                    <div class="route-title" id="secondaryRouteTitle" style="color:#707784">최적 도로</div>
+                    <div class="route-title" id="secondaryRouteTitle" style="color:#6d6d6d">시간 우선</div>
                     <button class="small-btn">상세</button>
                   </div>
-                  <div class="route-time">16분</div>
-                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                  <div class="route-time">22분</div>
+                  <div class="route-desc">오후 3:32 도착</div>
+                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
               </div>
 
               <div class="sheet-actions">
-                <button class="history-btn">◔</button>
+                <button class="history-btn">다른시간 출발</button>
                 <button class="primary-btn" id="startGuideBtn">안내시작</button>
               </div>
             </div>
 
             <div class="state-panel" id="state-select">
               <h3 class="sheet-title">선택한 구간을 어떻게 기억할까요?</h3>
-              <p class="sheet-sub">이 구간에 대한 선호를 빠르게 저장하거나, 이유와 조건을 함께 기록할 수 있어요.</p>
+              <p class="sheet-sub">먼저 빠르게 선택하고, 필요하면 이유와 조건을 추가할 수 있어요.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
                 <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
               <div class="guide-card">
-                <h4 class="tag-section-title">빠른 태깅</h4>
-                <p class="tag-section-desc">선호 여부만 간단히 저장해요.</p>
+                <h4 class="tag-section-title">빠른 선택</h4>
+                <p class="tag-section-desc">처음에는 간단한 선택만 해도 충분해요.</p>
                 <div class="quick-tag-grid">
-                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>회피 구간으로 저장</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
-                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>선호 구간으로 저장</strong><span>가능하면 이 구간을 포함해 안내</span></button>
+                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>피하고 싶은 구간</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
+                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>자주 이용하고 싶은 구간</strong><span>가능하면 이 구간을 포함해 안내</span></button>
                 </div>
                 <button class="primary-btn" id="quickConfirmBtn" style="margin-top:10px; width:100%;">확인</button>
               </div>
               <div class="guide-card" style="margin-bottom:10px;">
-                <h4 class="tag-section-title">상세 태깅</h4>
-                <p class="tag-section-desc">이유와 상황까지 함께 저장하면 더 정확하게 반영돼요.</p>
-                <button class="detail-tag-btn" id="detailTagBtn"><strong>구체적으로 구간 태깅하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해 / 예전에 사고 날 뻔했어</span></button>
+                <h4 class="tag-section-title">상세 입력</h4>
+                <p class="tag-section-desc">필요하면 이유와 조건을 추가할 수 있어요.</p>
+                <button class="detail-tag-btn" id="detailTagBtn"><strong>이유와 조건 추가하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해</span></button>
               </div>
             </div>
 
@@ -1350,10 +1442,10 @@
             </div>
 
             <div class="state-panel" id="state-confirm">
-              <h3 class="sheet-title">AI가 이해한 내용</h3>
+              <h3 class="sheet-title">이렇게 기억할게요</h3>
               <div class="confirm-scroll">
                 <div class="guide-card">
-                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">요약된 기억</strong>
                   <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
                 </div>
                 <div class="guide-card">
@@ -1372,8 +1464,8 @@
                 </div>
               </div>
               <div class="dual-actions">
-                <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
-                <button class="primary-btn" id="saveTagBtn">이대로 기억하기</button>
+                <button class="inline-btn" id="confirmBackBtn">수정하기</button>
+                <button class="primary-btn" id="saveTagBtn">기억하기</button>
               </div>
             </div>
 
@@ -1393,11 +1485,26 @@
       </div>
       <nav class="bottom-nav">
         <div class="bottom-nav-grid">
-          <button class="nav-item"><span class="emo">🏠</span>홈</button>
-          <button class="nav-item" id="myTagNavBtn"><span class="emo">📍</span>나의태깅</button>
-          <button class="nav-item"><span class="emo">⭐</span>저장</button>
-          <button class="nav-item"><span class="emo">🔄</span>카라이프</button>
-          <button class="nav-item"><span class="emo">👤</span>마이</button>
+          <button class="nav-item" aria-label="홈">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m2.25 12 8.954-8.955a1.125 1.125 0 0 1 1.591 0L21.75 12M4.5 9.75V19.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9.75" /></svg>
+            홈
+          </button>
+          <button class="nav-item" id="myTagNavBtn" aria-label="나의태깅">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+            나의태깅
+          </button>
+          <button class="nav-item" aria-label="저장">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21l-7.5-4.5L4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" /></svg>
+            저장
+          </button>
+          <button class="nav-item" aria-label="카라이프">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.023 9.348h4.992v-.001" /><path d="M2.985 19.644v-.001" /><path d="M2.985 5.364v-.001" /><path d="M7.5 19.5h1.5" /><path d="M7.5 4.5h1.5" /><path d="M12 4.5a7.5 7.5 0 0 1 7.5 7.5v1.5m0 6.75V19.5A7.5 7.5 0 0 0 12 12H6.75" /></svg>
+            카라이프
+          </button>
+          <button class="nav-item" aria-label="마이">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+            마이
+          </button>
         </div>
       </nav>
     </main>
@@ -1456,6 +1563,7 @@
       const simpleSearchBtn = document.getElementById("simpleSearchBtn");
       const searchOverlay = document.getElementById("searchOverlay");
       const detailedSearchRow = document.getElementById("detailedSearchRow");
+      const searchStateHint = document.getElementById("searchStateHint");
       const transportTabs = document.getElementById("transportTabs");
       const bottomArea = document.querySelector(".bottom-area");
       const originInput = document.getElementById("originInput");
@@ -1503,11 +1611,25 @@
       let toastTimer;
 
       function setRouteStage(hasRoute) {
-        simpleSearchInput.closest(".simple-search").classList.toggle("hidden", hasRoute);
-        detailedSearchRow.classList.toggle("hidden", !hasRoute);
+        searchStateHint.textContent = hasRoute
+          ? "경로를 확인하고 이동 수단을 선택하세요"
+          : "목적지를 검색해 경로를 시작하세요";
+        simpleSearchInput.closest(".simple-search").classList.remove("hidden");
+        detailedSearchRow.classList.add("hidden");
         transportTabs.classList.toggle("hidden", !hasRoute);
         bottomArea.classList.toggle("hidden", !hasRoute);
         mapTools.classList.toggle("hidden", !hasRoute);
+        searchStateHint.classList.toggle("hidden", hasRoute);
+        if (hasRoute) {
+          const originText = (originInput.value || "출발지").trim();
+          const destinationText = (destinationInput.value || "목적지").trim();
+          simpleSearchInput.value = `${originText} → ${destinationText}`;
+          simpleSearchInput.readOnly = true;
+          simpleClearBtn.classList.add("hidden");
+        } else {
+          simpleSearchInput.readOnly = false;
+          simpleSearchInput.value = "";
+        }
         if (!hasRoute) tagListSheet.classList.add("hidden");
       }
 
@@ -1526,7 +1648,7 @@
       function syncSimpleSearchActions() {
         const hasText = simpleSearchInput.value.trim().length > 0;
         simpleClearBtn.classList.toggle("hidden", !hasText);
-        simpleSearchBtn.classList.toggle("hidden", !hasText);
+        simpleSearchBtn.classList.remove("hidden");
       }
 
       function showToast(message, time = 1800) {
@@ -1569,7 +1691,7 @@
           map.dragging.enable();
         }
         updateAiRouteGlow(brushActive);
-        bottomNav.classList.toggle("hidden", !state.baseRoute?.length);
+        bottomNav.classList.add("hidden");
       }
 
       function updateAiRouteGlow(enabled) {
@@ -1825,24 +1947,6 @@
         state.personalizationMode = true;
         resetSelection(true);
         brushLayer.style.pointerEvents = "auto";
-        let sheetTouchStartY = null;
-      const sheetHandleEl = document.querySelector(".sheet-handle");
-      if (sheetHandleEl) {
-        sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
-        });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
-      }
 
       setUI(UI_STATE.ROUTE);
         showToast("태깅할 구간을 선택해 주세요. 지도 위를 문질러 영역을 그리면 돼요.", 2600);
@@ -2125,24 +2229,6 @@
           });
 
           updateRouteCards(route);
-          let sheetTouchStartY = null;
-      const sheetHandleEl = document.querySelector(".sheet-handle");
-      if (sheetHandleEl) {
-        sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
-        });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
-      }
 
       setUI(UI_STATE.ROUTE);
           setRouteStage(true);
@@ -2319,6 +2405,9 @@
         syncSimpleSearchActions();
         searchOverlay.classList.remove("hidden");
       });
+      simpleSearchInput.addEventListener("blur", () => {
+        setTimeout(() => searchOverlay.classList.add("hidden"), 120);
+      });
       simpleSearchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
           destinationInput.value = simpleSearchInput.value.trim();
@@ -2366,23 +2455,57 @@
         tagListSheet.classList.toggle("hidden");
       });
 
-      let sheetTouchStartY = null;
       const sheetHandleEl = document.querySelector(".sheet-handle");
+      const sheetCardEl = document.querySelector(".sheet-card");
+      let sheetDragActive = false;
+      let sheetDragStartY = 0;
+      let sheetDragOffsetY = 0;
+
+      function setSheetExpanded(expanded) {
+        app.classList.toggle("sheet-expanded", expanded);
+      }
+
+      function onSheetDragStart(event) {
+        if (!sheetHandleEl || !sheetCardEl) return;
+        sheetDragActive = true;
+        sheetDragStartY = event.clientY;
+        sheetDragOffsetY = 0;
+        sheetCardEl.style.transition = "none";
+        sheetHandleEl.style.cursor = "grabbing";
+        if (sheetHandleEl.setPointerCapture) {
+          sheetHandleEl.setPointerCapture(event.pointerId);
+        }
+      }
+
+      function onSheetDragMove(event) {
+        if (!sheetDragActive || !sheetCardEl) return;
+        const deltaY = event.clientY - sheetDragStartY;
+        sheetDragOffsetY = deltaY;
+        const translateY = Math.max(0, deltaY);
+        sheetCardEl.style.transform = `translateY(${translateY}px)`;
+      }
+
+      function onSheetDragEnd() {
+        if (!sheetCardEl || !sheetHandleEl) return;
+        if (!sheetDragActive) return;
+        sheetDragActive = false;
+        sheetCardEl.style.transition = "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)";
+        sheetCardEl.style.transform = "translateY(0)";
+        sheetHandleEl.style.cursor = "grab";
+        if (sheetDragOffsetY <= -24) setSheetExpanded(true);
+        if (sheetDragOffsetY >= 24) setSheetExpanded(false);
+      }
+
       if (sheetHandleEl) {
         sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
+          if (Math.abs(sheetDragOffsetY) < 6) {
+            setSheetExpanded(!app.classList.contains("sheet-expanded"));
+          }
         });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
+        sheetHandleEl.addEventListener("pointerdown", onSheetDragStart);
+        sheetHandleEl.addEventListener("pointermove", onSheetDragMove);
+        sheetHandleEl.addEventListener("pointerup", onSheetDragEnd);
+        sheetHandleEl.addEventListener("pointercancel", onSheetDragEnd);
       }
 
       setUI(UI_STATE.ROUTE);
