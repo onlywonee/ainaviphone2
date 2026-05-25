@@ -310,11 +310,18 @@
 
       .floating-left-tools {
         position: absolute;
-        left: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 300px);
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(env(safe-area-inset-bottom) + 104px);
         z-index: 24;
-        display: grid;
-        gap: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(202, 211, 225, 0.9);
+        border-radius: 999px;
+        padding: 8px 10px;
+        box-shadow: 0 8px 20px rgba(18, 31, 52, 0.16);
       }
 
       .floating-right-tools {
@@ -370,6 +377,16 @@
         display: grid;
         place-items: center;
         cursor: pointer;
+      }
+
+      .tool-fab .fab-icon {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
 
@@ -1090,8 +1107,9 @@
         }
 
         .floating-left-tools {
-          left: 10px;
-          bottom: calc(env(safe-area-inset-bottom) + 255px);
+          left: 50%;
+          transform: translateX(-50%);
+          bottom: calc(env(safe-area-inset-bottom) + 92px);
           gap: 8px;
         }
 
@@ -1301,10 +1319,14 @@
           <span>이 구간을 기억할까요?</span>
           <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
         </div>
+        <button class="tool-fab" aria-label="즐겨찾기">
+          <svg class="fab-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m11.48 3.499-2.071 4.196-4.632.673 3.351 3.266-.792 4.613L11.48 14.07l4.143 2.177-.792-4.613 3.351-3.266-4.632-.673L11.48 3.5Z" />
+          </svg>
+        </button>
         <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 태깅 가능">
           <span class="ai-text">AI 태깅 가능</span>
         </button>
-        <button class="tool-fab">★</button>
       </div>
 
       <div class="floating-right-tools" id="mapQuickTools">
