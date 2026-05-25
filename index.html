@@ -114,17 +114,17 @@
         right: 0;
         top: 0;
         z-index: 30;
-        padding: calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 18px) 0 calc(env(safe-area-inset-left) + 14px);
+        padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 0px) 0 calc(env(safe-area-inset-left) + 0px);
         pointer-events: none;
       }
 
       .route-bar {
-        background: rgba(246, 248, 251, 0.97);
-        border-radius: 24px;
-        border: 1px solid #d9dee7;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        background: rgba(246, 248, 251, 0.985);
+        border-radius: 0 0 28px 28px;
+        border: none;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
         color: #141821;
-        padding: 14px 14px 12px;
+        padding: 14px 18px 12px;
         pointer-events: auto;
         width: 100%;
         max-width: 100%;
@@ -132,19 +132,17 @@
 
       .simple-search {
         width: 100%;
-        min-height: 44px;
-        border-radius: 999px;
-        background:
-          linear-gradient(#fff, #fff) padding-box,
-          linear-gradient(92deg, #d657ff 0%, #3bc3ff 100%) border-box;
-        border: 2px solid transparent;
+        min-height: 56px;
+        border-radius: 14px;
+        background: #f7f8fa;
+        border: 1px solid #d8dde5;
         display: grid;
-        grid-template-columns: 30px 1fr 28px 28px;
+        grid-template-columns: 26px 1fr 24px 24px;
         gap: 10px;
         align-items: center;
         padding: 0 16px;
-        font-size: 14px;
-        color: #a0a8b5;
+        font-size: 13px;
+        color: #9aa3b2;
         font-weight: 700;
       }
 
@@ -152,8 +150,8 @@
         border: none;
         outline: none;
         background: transparent;
-        font-size: 15px;
-        color: #171c24;
+        font-size: 18px;
+        color: #1f2430;
         font-weight: 700;
       }
 
@@ -1067,12 +1065,12 @@
       /* Small-phone responsive tune (iPhone viewport ratio) */
       @media (max-width: 430px), (max-height: 820px) {
         .top-wrap {
-          padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);
+          padding: calc(env(safe-area-inset-top) + 6px) calc(env(safe-area-inset-right) + 0px) 0 calc(env(safe-area-inset-left) + 0px);
         }
 
         .route-bar {
-          border-radius: 22px 22px 14px 14px;
-          padding: 10px 10px 9px;
+          border-radius: 0 0 28px 28px;
+          padding: 12px 16px 11px;
         }
 
         .search-row {
@@ -1104,8 +1102,8 @@
         }
 
         .transport-tabs {
-          gap: 8px;
-          padding: 10px 8px 0;
+          gap: 16px;
+          padding: 0 4px;
         }
 
         .transport-tab {
@@ -1604,7 +1602,7 @@
 
       function setRouteStage(hasRoute) {
         searchStateHint.textContent = hasRoute
-          ? "경로 후보를 확인하고 안내를 시작하세요"
+          ? "경로를 확인하고 이동 수단을 선택하세요"
           : "목적지를 검색해 경로를 시작하세요";
         simpleSearchInput.closest(".simple-search").classList.toggle("hidden", hasRoute);
         detailedSearchRow.classList.toggle("hidden", !hasRoute);
@@ -1672,8 +1670,7 @@
           map.dragging.enable();
         }
         updateAiRouteGlow(brushActive);
-        const navVisible = stateName === UI_STATE.ROUTE && !state.personalizationMode;
-        bottomNav.classList.toggle("hidden", !state.baseRoute?.length || !navVisible);
+        bottomNav.classList.add("hidden");
       }
 
       function updateAiRouteGlow(enabled) {
