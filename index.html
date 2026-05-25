@@ -317,7 +317,7 @@
         position: absolute;
         left: 14px;
         right: 14px;
-        bottom: calc(env(safe-area-inset-bottom) + 320px);
+        bottom: calc(env(safe-area-inset-bottom) + 336px);
         z-index: 24;
         display: flex;
         align-items: center;
@@ -369,8 +369,8 @@
       }
 
       .tool-fab {
-        width: 58px;
-        height: 58px;
+        width: 66px;
+        height: 66px;
         border-radius: 50%;
         border: 1px solid rgba(37, 48, 69, 0.08);
         background: #fff;
@@ -403,10 +403,10 @@
         position: relative;
         border: 1px solid rgba(37, 48, 69, 0.08);
         width: auto;
-        min-width: 112px;
-        max-width: 150px;
-        height: 44px;
-        padding: 0 14px;
+        min-width: 154px;
+        max-width: 154px;
+        height: 66px;
+        padding: 0 18px;
         border-radius: 999px;
         flex: 0 0 auto;
         justify-content: center;
@@ -420,15 +420,17 @@
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 13px;
+        font-size: 44px;
+        transform: scale(0.52);
+        transform-origin: center;
         letter-spacing: -0.01em;
         line-height: 1;
         white-space: nowrap;
       }
 
       .floating-left-tools .tool-fab:first-of-type {
-        width: 48px;
-        height: 48px;
+        width: 66px;
+        height: 66px;
       }
 
       .bottom-area {
@@ -493,7 +495,7 @@
       }
 
       #app.ui-route .bottom-area {
-        max-height: 34vh;
+        max-height: 38vh;
       }
 
       #app.ui-done .bottom-area {
@@ -558,7 +560,7 @@
 
       .route-options {
         display: flex;
-        gap: 10px;
+        gap: 14px;
         overflow-x: auto;
         padding: 0 12px 10px;
         scroll-snap-type: x mandatory;
@@ -567,18 +569,18 @@
       .route-options::-webkit-scrollbar { display: none; }
 
       .route-card {
-        min-width: 144px;
-        background: #f8fafe;
-        border-radius: 24px;
-        padding: 10px;
-        border: 2px solid transparent;
-        box-shadow: inset 0 0 0 1px #e6ebf2;
+        min-width: 184px;
+        background: #fff;
+        border-radius: 25px;
+        padding: 14px 14px 12px;
+        border: 3px solid #b9b9b9;
+        box-shadow: none;
         scroll-snap-align: start;
       }
 
       .route-card.active {
-        border-color: #2e73f0;
-        box-shadow: 0 1px 0 rgba(46, 115, 240, 0.08), inset 0 0 0 1px rgba(46, 115, 240, 0.08);
+        border-color: #0066ff;
+        box-shadow: none;
       }
 
       .route-top {
@@ -595,7 +597,7 @@
         align-items: center;
         gap: 6px;
         color: var(--brand);
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 800;
         white-space: nowrap;
         overflow: hidden;
@@ -609,9 +611,9 @@
         border: 1px solid #ccd3de;
         background: #f3f6fb;
         border-radius: 16px;
-        min-width: 52px;
-        height: 38px;
-        font-size: 15px;
+        min-width: 62px;
+        height: 36px;
+        font-size: 18px;
         color: #687080;
         font-weight: 700;
         cursor: pointer;
@@ -619,23 +621,23 @@
       }
 
       .route-time {
-        font-size: 34px;
+        font-size: 58px;
         line-height: 1;
         font-weight: 800;
         letter-spacing: -0.04em;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .route-desc {
-        font-size: 14px;
-        line-height: 1.4;
-        color: #3f4550;
+        font-size: 18px;
+        line-height: 1.32;
+        color: #11151d;
       }
 
       .sheet-actions {
         display: grid;
-        grid-template-columns: 52px 1fr;
-        gap: 10px;
+        grid-template-columns: 152px 1fr;
+        gap: 14px;
         padding: 0 12px 10px;
       }
 
@@ -649,19 +651,20 @@
       }
 
       .history-btn {
-        border-radius: 18px;
-        background: #d9dde5;
+        min-height: 74px;
+        border-radius: 12px;
+        background: #8b929a;
         color: #fff;
-        font-size: 28px;
+        font-size: 18px;
       }
 
       .primary-btn {
-        min-height: 50px;
-        border-radius: 18px;
-        background: var(--brand);
+        min-height: 74px;
+        border-radius: 12px;
+        background: #0066ff;
         color: #fff;
-        font-size: 18px;
-        box-shadow: 0 12px 20px rgba(10, 102, 255, 0.24);
+        font-size: 28px;
+        box-shadow: none;
       }
 
       .secondary-btn {
@@ -1375,21 +1378,23 @@
                     <div class="route-title" id="primaryRouteTitle">기본 추천 경로</div>
                     <button class="small-btn">상세</button>
                   </div>
-                  <div class="route-time">16분</div>
-                  <div class="route-desc">16분 · 17km · 통행료 없음</div>
+                  <div class="route-time">24분</div>
+                  <div class="route-desc">오후 3:34 도착</div>
+                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
                 <article class="route-card">
                   <div class="route-top">
-                    <div class="route-title" id="secondaryRouteTitle" style="color:#707784">내 취향 반영 경로</div>
+                    <div class="route-title" id="secondaryRouteTitle" style="color:#6d6d6d">시간 우선</div>
                     <button class="small-btn">상세</button>
                   </div>
-                  <div class="route-time">16분</div>
-                  <div class="route-desc">18분 · 좁은 골목 1곳 회피 · 선호 구간 포함</div>
+                  <div class="route-time">22분</div>
+                  <div class="route-desc">오후 3:32 도착</div>
+                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
               </div>
 
               <div class="sheet-actions">
-                <button class="history-btn">◔</button>
+                <button class="history-btn">다른시간 출발</button>
                 <button class="primary-btn" id="startGuideBtn">안내시작</button>
               </div>
             </div>
