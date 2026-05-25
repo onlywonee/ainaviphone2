@@ -503,6 +503,9 @@
         overflow: hidden;
         width: 100%;
         max-width: 100%;
+        transform: translateY(0);
+        transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
       }
 
 
@@ -520,6 +523,8 @@
         border-radius: 999px;
         background: #d1d7e0;
         margin: 10px auto 10px;
+        touch-action: none;
+        cursor: grab;
       }
 
       .route-options {
@@ -1890,24 +1895,6 @@
         state.personalizationMode = true;
         resetSelection(true);
         brushLayer.style.pointerEvents = "auto";
-        let sheetTouchStartY = null;
-      const sheetHandleEl = document.querySelector(".sheet-handle");
-      if (sheetHandleEl) {
-        sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
-        });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
-      }
 
       setUI(UI_STATE.ROUTE);
         showToast("태깅할 구간을 선택해 주세요. 지도 위를 문질러 영역을 그리면 돼요.", 2600);
@@ -2190,24 +2177,6 @@
           });
 
           updateRouteCards(route);
-          let sheetTouchStartY = null;
-      const sheetHandleEl = document.querySelector(".sheet-handle");
-      if (sheetHandleEl) {
-        sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
-        });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
-      }
 
       setUI(UI_STATE.ROUTE);
           setRouteStage(true);
@@ -2434,23 +2403,57 @@
         tagListSheet.classList.toggle("hidden");
       });
 
-      let sheetTouchStartY = null;
       const sheetHandleEl = document.querySelector(".sheet-handle");
+      const sheetCardEl = document.querySelector(".sheet-card");
+      let sheetDragActive = false;
+      let sheetDragStartY = 0;
+      let sheetDragOffsetY = 0;
+
+      function setSheetExpanded(expanded) {
+        app.classList.toggle("sheet-expanded", expanded);
+      }
+
+      function onSheetDragStart(event) {
+        if (!sheetHandleEl || !sheetCardEl) return;
+        sheetDragActive = true;
+        sheetDragStartY = event.clientY;
+        sheetDragOffsetY = 0;
+        sheetCardEl.style.transition = "none";
+        sheetHandleEl.style.cursor = "grabbing";
+        if (sheetHandleEl.setPointerCapture) {
+          sheetHandleEl.setPointerCapture(event.pointerId);
+        }
+      }
+
+      function onSheetDragMove(event) {
+        if (!sheetDragActive || !sheetCardEl) return;
+        const deltaY = event.clientY - sheetDragStartY;
+        sheetDragOffsetY = deltaY;
+        const translateY = Math.max(0, deltaY);
+        sheetCardEl.style.transform = `translateY(${translateY}px)`;
+      }
+
+      function onSheetDragEnd() {
+        if (!sheetCardEl || !sheetHandleEl) return;
+        if (!sheetDragActive) return;
+        sheetDragActive = false;
+        sheetCardEl.style.transition = "transform 260ms cubic-bezier(0.22, 1, 0.36, 1)";
+        sheetCardEl.style.transform = "translateY(0)";
+        sheetHandleEl.style.cursor = "grab";
+        if (sheetDragOffsetY <= -24) setSheetExpanded(true);
+        if (sheetDragOffsetY >= 24) setSheetExpanded(false);
+      }
+
       if (sheetHandleEl) {
         sheetHandleEl.addEventListener("click", () => {
-          app.classList.toggle("sheet-expanded");
+          if (Math.abs(sheetDragOffsetY) < 6) {
+            setSheetExpanded(!app.classList.contains("sheet-expanded"));
+          }
         });
-        sheetHandleEl.addEventListener("touchstart", (event) => {
-          sheetTouchStartY = event.touches?.[0]?.clientY ?? null;
-        }, { passive: true });
-        sheetHandleEl.addEventListener("touchend", (event) => {
-          const endY = event.changedTouches?.[0]?.clientY;
-          if (sheetTouchStartY == null || endY == null) return;
-          const diff = sheetTouchStartY - endY;
-          if (diff > 24) app.classList.add("sheet-expanded");
-          if (diff < -24) app.classList.remove("sheet-expanded");
-          sheetTouchStartY = null;
-        }, { passive: true });
+        sheetHandleEl.addEventListener("pointerdown", onSheetDragStart);
+        sheetHandleEl.addEventListener("pointermove", onSheetDragMove);
+        sheetHandleEl.addEventListener("pointerup", onSheetDragEnd);
+        sheetHandleEl.addEventListener("pointercancel", onSheetDragEnd);
       }
 
       setUI(UI_STATE.ROUTE);
