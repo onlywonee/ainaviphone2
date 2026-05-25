@@ -132,7 +132,7 @@
 
       .simple-search {
         width: 100%;
-        min-height: 52px;
+        min-height: 44px;
         border-radius: 999px;
         background:
           linear-gradient(#fff, #fff) padding-box,
@@ -143,7 +143,7 @@
         gap: 10px;
         align-items: center;
         padding: 0 16px;
-        font-size: 16px;
+        font-size: 14px;
         color: #a0a8b5;
         font-weight: 700;
       }
@@ -152,7 +152,7 @@
         border: none;
         outline: none;
         background: transparent;
-        font-size: 16px;
+        font-size: 15px;
         color: #171c24;
         font-weight: 700;
       }
@@ -169,28 +169,28 @@
         position: absolute;
         left: 14px;
         right: 14px;
-        top: calc(env(safe-area-inset-top) + 94px);
+        top: calc(env(safe-area-inset-top) + 72px);
         z-index: 32;
         background: rgba(252, 253, 255, 0.98);
-        border-radius: 22px;
+        border-radius: 16px;
         box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
-        padding: 11px;
+        padding: 8px;
       }
 
       .search-overlay.hidden { display: none; }
 
-      .recent-title { font-size: 14px; color: #727b88; margin: 10px 4px 8px; font-weight: 700; }
+      .recent-title { font-size: 12px; color: #727b88; margin: 6px 4px; font-weight: 700; }
       .recent-item {
         width: 100%;
         border: none;
         background: #f2f5f9;
-        border-radius: 14px;
-        min-height: 44px;
+        border-radius: 10px;
+        min-height: 36px;
         text-align: left;
-        padding: 0 12px;
-        margin-bottom: 8px;
+        padding: 0 10px;
+        margin-bottom: 0;
         color: #2b313c;
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 700;
       }
 
@@ -362,12 +362,16 @@
       .ai-tool {
         background: #fff;
         color: #1358e8;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 900;
         letter-spacing: 0.02em;
         box-shadow: 0 8px 18px rgba(22, 32, 51, 0.14);
         position: relative;
         border: 1px solid rgba(37, 48, 69, 0.08);
+        width: auto;
+        min-width: 56px;
+        padding: 0 14px;
+        border-radius: 999px;
       }
 
       .ai-tool .ai-text {
@@ -378,9 +382,10 @@
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 23px;
+        font-size: 13px;
         letter-spacing: -0.01em;
         line-height: 1;
+        white-space: nowrap;
       }
 
       .bottom-area {
@@ -883,7 +888,7 @@
         align-items: center;
         gap: 6px;
         padding: 8px 12px;
-        border-radius: 14px;
+        border-radius: 999px;
         background: linear-gradient(180deg, #6458ff 0%, #2f73ff 100%);
         color: #fff;
         font-size: 12px;
@@ -1233,6 +1238,7 @@
             <button class="simple-icon-btn hidden" id="simpleClearBtn" aria-label="입력 지우기">✕</button>
             <button class="simple-icon-btn hidden" id="simpleSearchBtn" aria-label="검색">⌕</button>
           </div>
+          <div id="searchStateHint" style="margin:6px 6px 0; font-size:12px; color:#6f7886; font-weight:600;">목적지를 검색해 경로를 시작하세요</div>
           <div class="search-row hidden" id="detailedSearchRow">
             <button class="icon-btn" id="routeBackBtn" aria-label="뒤로가기">‹</button>
             <div class="search-stack">
@@ -1259,11 +1265,11 @@
 
       <div class="floating-left-tools" id="mapTools">
         <div class="ai-intro-bubble hidden" id="aiIntroBubble">
-          <span>이 구간에 대한 나만의 주행 선호를 기억해요</span>
+          <span>이 구간을 기억할까요?</span>
           <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
         </div>
-        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 개인화 모드">
-          <span class="ai-text">AI</span>
+        <button class="tool-fab ai-tool hidden" id="aiTagBtn" aria-label="AI 태깅 가능">
+          <span class="ai-text">AI 태깅 가능</span>
         </button>
         <button class="tool-fab">★</button>
       </div>
@@ -1296,19 +1302,19 @@
               <div class="route-options">
                 <article class="route-card active">
                   <div class="route-top">
-                    <div class="route-title" id="primaryRouteTitle">추천 경로</div>
+                    <div class="route-title" id="primaryRouteTitle">기본 추천 경로</div>
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">16분</div>
-                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                  <div class="route-desc">16분 · 17km · 통행료 없음</div>
                 </article>
                 <article class="route-card">
                   <div class="route-top">
-                    <div class="route-title" id="secondaryRouteTitle" style="color:#707784">최적 도로</div>
+                    <div class="route-title" id="secondaryRouteTitle" style="color:#707784">내 취향 반영 경로</div>
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">16분</div>
-                  <div class="route-desc">오전 2:01 도착<br />17km · 통행료 없음</div>
+                  <div class="route-desc">18분 · 좁은 골목 1곳 회피 · 선호 구간 포함</div>
                 </article>
               </div>
 
@@ -1320,24 +1326,24 @@
 
             <div class="state-panel" id="state-select">
               <h3 class="sheet-title">선택한 구간을 어떻게 기억할까요?</h3>
-              <p class="sheet-sub">이 구간에 대한 선호를 빠르게 저장하거나, 이유와 조건을 함께 기록할 수 있어요.</p>
+              <p class="sheet-sub">먼저 빠르게 선택하고, 필요하면 이유와 조건을 추가할 수 있어요.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
                 <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
               <div class="guide-card">
-                <h4 class="tag-section-title">빠른 태깅</h4>
-                <p class="tag-section-desc">선호 여부만 간단히 저장해요.</p>
+                <h4 class="tag-section-title">빠른 선택</h4>
+                <p class="tag-section-desc">처음에는 간단한 선택만 해도 충분해요.</p>
                 <div class="quick-tag-grid">
-                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>회피 구간으로 저장</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
-                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>선호 구간으로 저장</strong><span>가능하면 이 구간을 포함해 안내</span></button>
+                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>피하고 싶은 구간</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
+                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>자주 이용하고 싶은 구간</strong><span>가능하면 이 구간을 포함해 안내</span></button>
                 </div>
                 <button class="primary-btn" id="quickConfirmBtn" style="margin-top:10px; width:100%;">확인</button>
               </div>
               <div class="guide-card" style="margin-bottom:10px;">
-                <h4 class="tag-section-title">상세 태깅</h4>
-                <p class="tag-section-desc">이유와 상황까지 함께 저장하면 더 정확하게 반영돼요.</p>
-                <button class="detail-tag-btn" id="detailTagBtn"><strong>구체적으로 구간 태깅하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해 / 예전에 사고 날 뻔했어</span></button>
+                <h4 class="tag-section-title">상세 입력</h4>
+                <p class="tag-section-desc">필요하면 이유와 조건을 추가할 수 있어요.</p>
+                <button class="detail-tag-btn" id="detailTagBtn"><strong>이유와 조건 추가하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해</span></button>
               </div>
             </div>
 
@@ -1361,10 +1367,10 @@
             </div>
 
             <div class="state-panel" id="state-confirm">
-              <h3 class="sheet-title">AI가 이해한 내용</h3>
+              <h3 class="sheet-title">이렇게 기억할게요</h3>
               <div class="confirm-scroll">
                 <div class="guide-card">
-                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">AI가 이해한 내용</strong>
+                  <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">요약된 기억</strong>
                   <div id="summaryText" style="font-size:15px; line-height:1.56; color:#5f6673;">이 구간에 대한 개인 선호를 저장할게요.</div>
                 </div>
                 <div class="guide-card">
@@ -1383,8 +1389,8 @@
                 </div>
               </div>
               <div class="dual-actions">
-                <button class="inline-btn" id="confirmBackBtn">다시 말하기</button>
-                <button class="primary-btn" id="saveTagBtn">이대로 기억하기</button>
+                <button class="inline-btn" id="confirmBackBtn">수정하기</button>
+                <button class="primary-btn" id="saveTagBtn">기억하기</button>
               </div>
             </div>
 
@@ -1482,6 +1488,7 @@
       const simpleSearchBtn = document.getElementById("simpleSearchBtn");
       const searchOverlay = document.getElementById("searchOverlay");
       const detailedSearchRow = document.getElementById("detailedSearchRow");
+      const searchStateHint = document.getElementById("searchStateHint");
       const transportTabs = document.getElementById("transportTabs");
       const bottomArea = document.querySelector(".bottom-area");
       const originInput = document.getElementById("originInput");
@@ -1529,6 +1536,9 @@
       let toastTimer;
 
       function setRouteStage(hasRoute) {
+        searchStateHint.textContent = hasRoute
+          ? "경로 후보를 확인하고 안내를 시작하세요"
+          : "목적지를 검색해 경로를 시작하세요";
         simpleSearchInput.closest(".simple-search").classList.toggle("hidden", hasRoute);
         detailedSearchRow.classList.toggle("hidden", !hasRoute);
         transportTabs.classList.toggle("hidden", !hasRoute);
@@ -1595,7 +1605,8 @@
           map.dragging.enable();
         }
         updateAiRouteGlow(brushActive);
-        bottomNav.classList.toggle("hidden", !state.baseRoute?.length);
+        const navVisible = stateName === UI_STATE.ROUTE && !state.personalizationMode;
+        bottomNav.classList.toggle("hidden", !state.baseRoute?.length || !navVisible);
       }
 
       function updateAiRouteGlow(enabled) {
@@ -2344,6 +2355,9 @@
       simpleSearchInput.addEventListener("input", () => {
         syncSimpleSearchActions();
         searchOverlay.classList.remove("hidden");
+      });
+      simpleSearchInput.addEventListener("blur", () => {
+        setTimeout(() => searchOverlay.classList.add("hidden"), 120);
       });
       simpleSearchInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
