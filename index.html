@@ -137,7 +137,7 @@
         background: #f7f8fa;
         border: 1px solid #d8dde5;
         display: grid;
-        grid-template-columns: 26px 1fr 24px 24px;
+        grid-template-columns: 26px 1fr 32px;
         gap: 10px;
         align-items: center;
         padding: 0 16px;
@@ -158,7 +158,14 @@
       .simple-icon-btn {
         border: none;
         background: transparent;
-        font-size: 18px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #cfd5de;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
         color: #788291;
         padding: 0;
       }
@@ -1282,9 +1289,7 @@
             <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;color:#1e232b;"><path d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
             <input id="simpleSearchInput" placeholder="장소, 주소 검색" />
             <button class="simple-icon-btn hidden" id="simpleClearBtn" aria-label="입력 지우기">✕</button>
-            <button class="simple-icon-btn hidden" id="simpleSearchBtn" aria-label="검색">
-              <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35" /><circle cx="11" cy="11" r="6" /></svg>
-            </button>
+            <button class="simple-icon-btn" id="simpleSearchBtn" aria-label="경로 옵션 추가">＋</button>
           </div>
           <div id="searchStateHint" style="margin:6px 6px 0; font-size:12px; color:#6f7886; font-weight:600;">목적지를 검색해 경로를 시작하세요</div>
           <div class="search-row hidden" id="detailedSearchRow">
@@ -1604,11 +1609,22 @@
         searchStateHint.textContent = hasRoute
           ? "경로를 확인하고 이동 수단을 선택하세요"
           : "목적지를 검색해 경로를 시작하세요";
-        simpleSearchInput.closest(".simple-search").classList.toggle("hidden", hasRoute);
-        detailedSearchRow.classList.toggle("hidden", !hasRoute);
+        simpleSearchInput.closest(".simple-search").classList.remove("hidden");
+        detailedSearchRow.classList.add("hidden");
         transportTabs.classList.toggle("hidden", !hasRoute);
         bottomArea.classList.toggle("hidden", !hasRoute);
         mapTools.classList.toggle("hidden", !hasRoute);
+        searchStateHint.classList.toggle("hidden", hasRoute);
+        if (hasRoute) {
+          const originText = (originInput.value || "출발지").trim();
+          const destinationText = (destinationInput.value || "목적지").trim();
+          simpleSearchInput.value = `${originText} → ${destinationText}`;
+          simpleSearchInput.readOnly = true;
+          simpleClearBtn.classList.add("hidden");
+        } else {
+          simpleSearchInput.readOnly = false;
+          simpleSearchInput.value = "";
+        }
         if (!hasRoute) tagListSheet.classList.add("hidden");
       }
 
@@ -1627,7 +1643,7 @@
       function syncSimpleSearchActions() {
         const hasText = simpleSearchInput.value.trim().length > 0;
         simpleClearBtn.classList.toggle("hidden", !hasText);
-        simpleSearchBtn.classList.toggle("hidden", !hasText);
+        simpleSearchBtn.classList.remove("hidden");
       }
 
       function showToast(message, time = 1800) {
