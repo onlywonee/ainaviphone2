@@ -417,7 +417,18 @@
         font-size: 12px;
         font-weight: 700;
       }
-      .nav-item .emo { display:block; font-size: 27px; margin-bottom: 2px; }
+      .nav-item .nav-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        margin: 0 auto 4px;
+        color: #2b3340;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
       .tag-list-sheet {
         position: absolute;
@@ -1393,11 +1404,26 @@
       </div>
       <nav class="bottom-nav">
         <div class="bottom-nav-grid">
-          <button class="nav-item"><span class="emo">🏠</span>홈</button>
-          <button class="nav-item" id="myTagNavBtn"><span class="emo">📍</span>나의태깅</button>
-          <button class="nav-item"><span class="emo">⭐</span>저장</button>
-          <button class="nav-item"><span class="emo">🔄</span>카라이프</button>
-          <button class="nav-item"><span class="emo">👤</span>마이</button>
+          <button class="nav-item" aria-label="홈">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m2.25 12 8.954-8.955a1.125 1.125 0 0 1 1.591 0L21.75 12M4.5 9.75V19.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9.75" /></svg>
+            홈
+          </button>
+          <button class="nav-item" id="myTagNavBtn" aria-label="나의태깅">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+            나의태깅
+          </button>
+          <button class="nav-item" aria-label="저장">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21l-7.5-4.5L4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" /></svg>
+            저장
+          </button>
+          <button class="nav-item" aria-label="카라이프">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.023 9.348h4.992v-.001" /><path d="M2.985 19.644v-.001" /><path d="M2.985 5.364v-.001" /><path d="M7.5 19.5h1.5" /><path d="M7.5 4.5h1.5" /><path d="M12 4.5a7.5 7.5 0 0 1 7.5 7.5v1.5m0 6.75V19.5A7.5 7.5 0 0 0 12 12H6.75" /></svg>
+            카라이프
+          </button>
+          <button class="nav-item" aria-label="마이">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+            마이
+          </button>
         </div>
       </nav>
     </main>
