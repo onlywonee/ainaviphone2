@@ -319,7 +319,7 @@
         position: absolute;
         left: 14px;
         right: 14px;
-        bottom: calc(env(safe-area-inset-bottom) + 336px);
+        bottom: calc(env(safe-area-inset-bottom) + 286px);
         z-index: 24;
         display: flex;
         align-items: center;
@@ -331,7 +331,7 @@
       .floating-right-tools {
         position: absolute;
         right: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 360px);
+        bottom: calc(env(safe-area-inset-bottom) + 292px);
         z-index: 24;
         display: grid;
         gap: 12px;
@@ -339,8 +339,8 @@
 
       .loc-tool {
         position: relative;
-        width: 63px;
-        height: 63px;
+        width: 56px;
+        height: 56px;
         padding: 0;
         display: flex;
         align-items: center;
@@ -353,10 +353,10 @@
       }
 
       .loc-crosshair {
-        width: 35px;
-        height: 35px;
+        width: 31px;
+        height: 31px;
         display: block;
-        flex: 0 0 35px;
+        flex: 0 0 31px;
       }
 
       .loc-crosshair circle,
@@ -371,8 +371,8 @@
       }
 
       .tool-fab {
-        width: 66px;
-        height: 66px;
+        width: 54px;
+        height: 54px;
         border-radius: 50%;
         border: 1px solid rgba(37, 48, 69, 0.08);
         background: #fff;
@@ -405,10 +405,10 @@
         position: relative;
         border: 1px solid rgba(37, 48, 69, 0.08);
         width: auto;
-        min-width: 154px;
-        max-width: 154px;
-        height: 66px;
-        padding: 0 18px;
+        min-width: 128px;
+        max-width: 128px;
+        height: 54px;
+        padding: 0 16px;
         border-radius: 999px;
         flex: 0 0 auto;
         justify-content: center;
@@ -422,8 +422,8 @@
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 44px;
-        transform: scale(0.52);
+        font-size: 20px;
+        transform: none;
         transform-origin: center;
         letter-spacing: -0.01em;
         line-height: 1;
@@ -431,8 +431,8 @@
       }
 
       .floating-left-tools .tool-fab:first-of-type {
-        width: 66px;
-        height: 66px;
+        width: 54px;
+        height: 54px;
       }
 
       .bottom-area {
@@ -934,8 +934,9 @@
 
       .ai-intro-bubble {
         position: absolute;
-        right: 0;
-        bottom: calc(100% + 8px);
+        left: 64px;
+        right: auto;
+        bottom: calc(100% + 6px);
         z-index: 26;
         display: flex;
         align-items: center;
@@ -953,8 +954,8 @@
       .ai-intro-bubble::after {
         content: "";
         position: absolute;
-        right: 20px;
-        bottom: -8px;
+        left: 54px;
+        bottom: -7px;
         width: 14px;
         height: 14px;
         background: #2f73ff;
@@ -1124,20 +1125,37 @@
         }
 
         .floating-left-tools {
-          left: 10px;
-          right: 10px;
-          bottom: calc(env(safe-area-inset-bottom) + 292px);
+          left: 12px;
+          right: 12px;
+          bottom: calc(env(safe-area-inset-bottom) + 224px);
           gap: 8px;
         }
 
         .floating-right-tools {
-          bottom: calc(env(safe-area-inset-bottom) + 334px);
+          right: 16px;
+          bottom: calc(env(safe-area-inset-bottom) + 232px);
         }
 
         .tool-fab {
-          width: 48px;
-          height: 48px;
-          font-size: 22px;
+          width: 46px;
+          height: 46px;
+          font-size: 20px;
+        }
+
+        .tool-fab .fab-icon {
+          width: 20px;
+          height: 20px;
+        }
+
+        .loc-tool {
+          width: 50px;
+          height: 50px;
+        }
+
+        .loc-crosshair {
+          width: 28px;
+          height: 28px;
+          flex-basis: 28px;
         }
 
         .vehicle-pill {
@@ -1150,7 +1168,26 @@
         }
 
         .ai-tool {
-          font-size: 13px;
+          min-width: 116px;
+          max-width: 116px;
+          height: 46px;
+          padding: 0 14px;
+        }
+
+        .ai-tool .ai-text {
+          font-size: 18px;
+          transform: none;
+        }
+
+        .ai-intro-bubble {
+          left: 54px;
+          bottom: calc(100% + 6px);
+          padding: 7px 11px;
+          font-size: 12px;
+        }
+
+        .ai-intro-bubble::after {
+          left: 46px;
         }
 
         .helper-toast {
@@ -1336,7 +1373,7 @@
 
       <div class="floating-left-tools" id="mapTools">
         <div class="ai-intro-bubble hidden" id="aiIntroBubble">
-          <span>이 구간을 기억할까요?</span>
+          <span>태깅해보세요</span>
           <button class="ai-intro-close" id="aiIntroCloseBtn" aria-label="툴팁 닫기">×</button>
         </div>
         <button class="tool-fab" aria-label="즐겨찾기">
