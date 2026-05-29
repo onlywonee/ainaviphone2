@@ -414,6 +414,13 @@
         justify-content: center;
       }
 
+      .ai-tool.active {
+        border-color: rgba(0, 102, 255, 0.42);
+        box-shadow:
+          0 0 0 3px rgba(0, 102, 255, 0.12),
+          0 8px 18px rgba(22, 32, 51, 0.14);
+      }
+
       .ai-tool .ai-text {
         position: relative;
         z-index: 1;
@@ -1721,6 +1728,8 @@
           aiIntroBubble.classList.remove("hidden");
         }
         const brushActive = stateName === UI_STATE.ROUTE && state.personalizationMode;
+        aiTagBtn.classList.toggle("active", brushActive);
+        aiTagBtn.setAttribute("aria-pressed", brushActive ? "true" : "false");
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
         if (brushActive) {
@@ -1988,8 +1997,27 @@
         resetSelection(true);
         brushLayer.style.pointerEvents = "auto";
 
-      setUI(UI_STATE.ROUTE);
+        setUI(UI_STATE.ROUTE);
         showToast("태깅할 구간을 선택해 주세요. 지도 위를 문질러 영역을 그리면 돼요.", 2600);
+      }
+
+      function deactivatePersonalizationMode() {
+        state.personalizationMode = false;
+        state.isBrushing = false;
+        state.isPinching = false;
+        map.dragging.enable();
+        brushLayer.style.pointerEvents = "none";
+        resetSelection(false);
+        setUI(UI_STATE.ROUTE);
+        showToast("AI태깅을 껐어요.", 1400);
+      }
+
+      function togglePersonalizationMode() {
+        if (state.personalizationMode) {
+          deactivatePersonalizationMode();
+          return;
+        }
+        activatePersonalizationMode();
       }
 
       function startBrush(event) {
@@ -2481,7 +2509,7 @@
 
       aiTagBtn.addEventListener("click", () => {
         aiIntroBubble.classList.add("hidden");
-        activatePersonalizationMode();
+        togglePersonalizationMode();
       });
       aiIntroCloseBtn.addEventListener("click", () => {
         aiIntroBubble.classList.add("hidden");
