@@ -66,6 +66,8 @@
       #app {
         position: relative;
         width: 100%;
+        max-width: 430px;
+        margin: 0 auto;
         height: 100dvh;
         min-height: 100svh;
         overflow: hidden;
@@ -621,7 +623,7 @@
       }
 
       .route-time {
-        font-size: 58px;
+        font-size: 46px;
         line-height: 1;
         font-weight: 800;
         letter-spacing: -0.04em;
@@ -629,15 +631,15 @@
       }
 
       .route-desc {
-        font-size: 18px;
+        font-size: 14px;
         line-height: 1.32;
         color: #11151d;
       }
 
       .sheet-actions {
         display: grid;
-        grid-template-columns: 152px 1fr;
-        gap: 14px;
+        grid-template-columns: 120px 1fr;
+        gap: 10px;
         padding: 0 12px 10px;
       }
 
@@ -651,19 +653,19 @@
       }
 
       .history-btn {
-        min-height: 74px;
+        min-height: 58px;
         border-radius: 12px;
         background: #8b929a;
         color: #fff;
-        font-size: 18px;
+        font-size: 15px;
       }
 
       .primary-btn {
-        min-height: 74px;
+        min-height: 58px;
         border-radius: 12px;
         background: #0066ff;
         color: #fff;
-        font-size: 28px;
+        font-size: 20px;
         box-shadow: none;
       }
 
@@ -1191,46 +1193,47 @@
         }
 
         .route-card {
-          min-width: 140px;
-          border-radius: 16px;
-          padding: 10px;
+          min-width: 170px;
+          border-radius: 20px;
+          padding: 12px;
         }
 
         .small-btn {
-          min-width: 46px;
-          height: 32px;
-          border-radius: 10px;
-          font-size: 13px;
+          min-width: 54px;
+          height: 34px;
+          border-radius: 12px;
+          font-size: 15px;
         }
 
         .route-title {
-          font-size: 13px;
+          font-size: 16px;
         }
 
         .route-time {
-          font-size: 30px;
-          margin-bottom: 8px;
+          font-size: 42px;
+          margin-bottom: 7px;
         }
 
         .route-desc {
-          font-size: 13px;
+          font-size: 14px;
         }
 
         .sheet-actions {
-          grid-template-columns: 52px 1fr;
+          grid-template-columns: 120px 1fr;
           gap: 10px;
           padding: 0 10px 12px;
         }
 
         .history-btn {
-          border-radius: 14px;
-          font-size: 24px;
+          min-height: 58px;
+          border-radius: 12px;
+          font-size: 15px;
         }
 
         .primary-btn {
-          min-height: 50px;
-          border-radius: 14px;
-          font-size: 16px;
+          min-height: 58px;
+          border-radius: 12px;
+          font-size: 20px;
         }
 
         .inline-btn,
@@ -1379,8 +1382,8 @@
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">24분</div>
-                  <div class="route-desc">오후 3:34 도착</div>
-                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
+                  <div class="route-desc route-arrival">오후 3:34 도착</div>
+                  <div class="route-desc route-meta">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
                 <article class="route-card">
                   <div class="route-top">
@@ -1388,8 +1391,8 @@
                     <button class="small-btn">상세</button>
                   </div>
                   <div class="route-time">22분</div>
-                  <div class="route-desc">오후 3:32 도착</div>
-                  <div class="route-desc">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
+                  <div class="route-desc route-arrival">오후 3:32 도착</div>
+                  <div class="route-desc route-meta">18km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span></div>
                 </article>
               </div>
 
@@ -1601,7 +1604,7 @@
       const aiIntroCloseBtn = document.getElementById("aiIntroCloseBtn");
 
       const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
-      const routeDescEls = Array.from(document.querySelectorAll(".route-desc"));
+      const routeMetaEls = Array.from(document.querySelectorAll(".route-meta"));
 
       let baseLine;
       let routeHitLine;
@@ -1814,8 +1817,8 @@
         routeTimeEls.forEach((el) => {
           el.textContent = `${mins}분`;
         });
-        routeDescEls.forEach((el) => {
-          el.innerHTML = `예상 소요 ${mins}분<br />${km}km · 통행료 정보 없음`;
+        routeMetaEls.forEach((el) => {
+          el.innerHTML = `${km}km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span>`;
         });
       }
 
