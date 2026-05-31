@@ -845,6 +845,29 @@
       .quick-tag-btn.prefer { border-color: #d9dee8; background: #f7f9fc; }
       .quick-tag-btn.active { border-color:#2d6df6; box-shadow:0 0 0 2px rgba(45,109,246,0.16); background:#eef4ff; }
 
+      .condition-chip-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .condition-chip-btn {
+        border: 1px solid #dce3ee;
+        border-radius: 999px;
+        background: #fff;
+        color: #566172;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 7px 10px;
+      }
+
+      .condition-chip-btn.active {
+        border-color: #2d6df6;
+        background: #eef4ff;
+        color: #115de8;
+      }
+
       .detail-tag-btn {
         width: 100%;
         text-align: left;
@@ -1483,30 +1506,36 @@
 
             <div class="state-panel" id="state-select">
               <h3 class="sheet-title">선택한 구간을 어떻게 기억할까요?</h3>
-              <p class="sheet-sub">먼저 빠르게 선택하고, 필요하면 이유와 조건을 추가할 수 있어요.</p>
+              <p class="sheet-sub">시간대, 상황, 불편했던 이유까지 같이 기억할 수 있어요.</p>
               <div class="guide-card">
                 <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">현재 선택 구간</strong>
                 <div id="selectedSegmentText" style="font-size:15px; color:#5f6673; line-height:1.5;">AI 보정 영역 · 약 180m</div>
               </div>
               <div class="guide-card">
-                <h4 class="tag-section-title">빠른 선택</h4>
-                <p class="tag-section-desc">처음에는 간단한 선택만 해도 충분해요.</p>
+                <h4 class="tag-section-title">상황별 기억 설정</h4>
+                <p class="tag-section-desc">언제 괜찮고 언제 불편한지까지 반영해요.</p>
                 <div class="quick-tag-grid">
-                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>피하고 싶은 구간</strong><span>앞으로 이 구간은 가급적 피해서 안내</span></button>
-                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>자주 이용하고 싶은 구간</strong><span>가능하면 이 구간을 포함해 안내</span></button>
+                  <button class="quick-tag-btn avoid" id="quickAvoidBtn"><strong>불편한 조건이 있는 구간</strong><span>밤·비 오는 날·차 많을 때는 피해서 안내</span></button>
+                  <button class="quick-tag-btn prefer" id="quickPreferBtn"><strong>상황에 따라 이용할 구간</strong><span>출근길·낮 시간·차가 적을 때는 우선 포함</span></button>
+                </div>
+                <div class="condition-chip-row" aria-label="적용 조건 빠른 선택">
+                  <button class="condition-chip-btn" type="button" data-condition="야간">야간</button>
+                  <button class="condition-chip-btn" type="button" data-condition="비·눈 오는 날">비·눈</button>
+                  <button class="condition-chip-btn" type="button" data-condition="출근길">출근길</button>
+                  <button class="condition-chip-btn" type="button" data-condition="차가 많을 때">차 많을 때</button>
                 </div>
                 <button class="primary-btn" id="quickConfirmBtn" style="margin-top:10px; width:100%;">확인</button>
               </div>
               <div class="guide-card" style="margin-bottom:10px;">
                 <h4 class="tag-section-title">상세 입력</h4>
-                <p class="tag-section-desc">필요하면 이유와 조건을 추가할 수 있어요.</p>
-                <button class="detail-tag-btn" id="detailTagBtn"><strong>이유와 조건 추가하기</strong><span>예: 밤에는 피하고 싶어 / 출근길엔 선호해</span></button>
+                <p class="tag-section-desc">요일, 시간대, 날씨, 운전 난이도 같은 조건을 더 정확히 남길 수 있어요.</p>
+                <button class="detail-tag-btn" id="detailTagBtn"><strong>시간대·이유 자세히 입력하기</strong><span>예: 밤에는 어두워서 피하고, 낮에는 한적해서 괜찮아</span></button>
               </div>
             </div>
 
             <div class="state-panel" id="state-input">
-              <h3 class="sheet-title">이 구간을 언제 선호하거나 회피할까요?</h3>
-              <p class="sheet-sub">지금 선택한 구간 기준으로, 선호/회피하고 싶은 조건을 말씀해 주세요.</p>
+              <h3 class="sheet-title">언제 괜찮고 언제 불편한가요?</h3>
+              <p class="sheet-sub">시간대, 날씨, 교통량, 운전하기 편한 이유를 자연스럽게 적어 주세요.</p>
               <div class="voice-zone">
                 <button class="voice-button" id="voiceBtn" aria-label="음성 입력">
                   <svg class="voice-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -2016,12 +2045,24 @@
           }
         }
 
+        focusSelectedSegment(center, radius);
         selectedSegmentText.textContent = describeSelectedSegment(state.selectedLatLngs);
         quickPreferenceChoice = null;
+        quickConditionChoice = null;
         document.getElementById("quickAvoidBtn")?.classList.remove("active");
         document.getElementById("quickPreferBtn")?.classList.remove("active");
+        conditionChipBtns.forEach((btn) => btn.classList.remove("active"));
         setUI(UI_STATE.SELECT);
         showToast("문질러 선택한 영역을 AI가 보정해서 태깅 대상으로 잡았어요.");
+      }
+
+      function focusSelectedSegment(center, radius) {
+        const currentZoom = map.getZoom();
+        const targetZoom = radius <= 80 ? 18 : radius <= 170 ? 17 : 16;
+        map.flyTo(center, Math.max(currentZoom, targetZoom), {
+          animate: true,
+          duration: 0.45,
+        });
       }
 
       function activatePersonalizationMode() {
@@ -2058,8 +2099,10 @@
 
       function dismissTaggingPanel() {
         quickPreferenceChoice = null;
+        quickConditionChoice = null;
         document.getElementById("quickAvoidBtn")?.classList.remove("active");
         document.getElementById("quickPreferBtn")?.classList.remove("active");
+        conditionChipBtns.forEach((btn) => btn.classList.remove("active"));
         resetSelection(true);
         setUI(UI_STATE.ROUTE);
         showToast("선택한 구간을 닫았어요. 다른 구간을 다시 선택할 수 있어요.", 1800);
@@ -2386,14 +2429,23 @@
       });
 
       let quickPreferenceChoice = null;
+      let quickConditionChoice = null;
       const quickAvoidBtn = document.getElementById("quickAvoidBtn");
       const quickPreferBtn = document.getElementById("quickPreferBtn");
       const quickConfirmBtn = document.getElementById("quickConfirmBtn");
+      const conditionChipBtns = Array.from(document.querySelectorAll(".condition-chip-btn"));
 
       function setQuickPreference(type) {
         quickPreferenceChoice = type;
         quickAvoidBtn.classList.toggle("active", type === "avoid");
         quickPreferBtn.classList.toggle("active", type === "prefer");
+      }
+
+      function setQuickCondition(condition) {
+        quickConditionChoice = quickConditionChoice === condition ? null : condition;
+        conditionChipBtns.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.condition === quickConditionChoice);
+        });
       }
 
       function quickTagAndContinue() {
@@ -2402,20 +2454,22 @@
           return;
         }
         if (!quickPreferenceChoice) {
-          showToast("회피 또는 선호를 먼저 선택해 주세요.");
+          showToast("언제 어떻게 기억할지 먼저 선택해 주세요.");
           return;
         }
         state.tagMode = quickPreferenceChoice;
+        const fallbackCondition = quickPreferenceChoice === "prefer" ? "출근길·낮 시간·교통량이 적을 때" : "야간·우천·혼잡 시";
+        const condition = quickConditionChoice || fallbackCondition;
         state.activeIntent = {
           destination: destinationInput.value.trim() || "현재 목적지",
           message: quickPreferenceChoice === "prefer"
-            ? "이 구간은 선호 구간으로 빠르게 저장할게요."
-            : "이 구간은 회피 구간으로 빠르게 저장할게요.",
-          tags: quickPreferenceChoice === "prefer" ? ["#선호구간", "#빠른저장"] : ["#회피구간", "#빠른저장"],
+            ? "차가 적거나 익숙한 시간대에는 이 구간을 우선 포함해서 안내할게요."
+            : "밤·비·혼잡처럼 운전이 불편한 상황에는 이 구간을 피해서 안내할게요.",
+          tags: quickPreferenceChoice === "prefer" ? ["#상황별선호", "#시간대조건", "#빠른저장"] : ["#상황별회피", "#불편조건", "#빠른저장"],
           preferenceType: quickPreferenceChoice,
-          ruleType: "quick",
-          raw: "빠른 태깅",
-          condition: "상시",
+          ruleType: "conditional-quick",
+          raw: `${quickPreferenceChoice === "prefer" ? "상황에 따라 이용할 구간" : "불편한 조건이 있는 구간"}${quickConditionChoice ? ` · ${quickConditionChoice}` : ""}`,
+          condition,
         };
         renderRule(state.activeIntent);
         setUI(UI_STATE.CONFIRM);
@@ -2423,6 +2477,9 @@
 
       quickAvoidBtn.addEventListener("click", () => setQuickPreference("avoid"));
       quickPreferBtn.addEventListener("click", () => setQuickPreference("prefer"));
+      conditionChipBtns.forEach((btn) => {
+        btn.addEventListener("click", () => setQuickCondition(btn.dataset.condition));
+      });
       quickConfirmBtn.addEventListener("click", quickTagAndContinue);
 
       document.getElementById("detailTagBtn").addEventListener("click", () => {
