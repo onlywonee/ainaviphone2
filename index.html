@@ -868,6 +868,25 @@
         color: #115de8;
       }
 
+      .manual-tag-selector {
+        display: none;
+        margin-top: 12px;
+      }
+
+      .manual-tag-selector.show {
+        display: block;
+      }
+
+      .manual-tag-selector .condition-chip-row {
+        margin-top: 8px;
+      }
+
+      .manual-tag-btn.active {
+        border-color: #2d6df6;
+        background: #eef4ff;
+        color: #115de8;
+      }
+
       .detail-tag-btn {
         width: 100%;
         text-align: left;
@@ -1544,7 +1563,19 @@
                 </button>
               </div>
               <div class="textarea-wrap">
-                <textarea id="speechText" placeholder="(예시) 8분 이상 차이 안 나면, 운전하기 편한 성수대교 쪽으로 갈래"></textarea>
+                <textarea id="speechText" placeholder="(예시) 여기 밤에 좀 무섭고 차선도 복잡한데 야경은 좋아"></textarea>
+              </div>
+              <div class="guide-card manual-tag-selector" id="manualTagSelector">
+                <h4 class="tag-section-title">직접 태그 선택</h4>
+                <p class="tag-section-desc">감지된 키워드가 없으면 아래에서 직접 골라 저장할 수 있어요.</p>
+                <div class="condition-chip-row">
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="traffic_negative" data-label="교통 불편" data-sentiment="negative">교통 불편</button>
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="driving_difficult" data-label="운전 어려움" data-sentiment="negative">운전 어려움</button>
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="safety_negative" data-label="안전 불안" data-sentiment="negative">안전 불안</button>
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="scenery_positive" data-label="경관 좋음" data-sentiment="positive">경관 좋음</button>
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="driving_easy" data-label="운전 쉬움" data-sentiment="positive">운전 쉬움</button>
+                  <button class="condition-chip-btn manual-tag-btn" type="button" data-category="preference_negative" data-label="비선호" data-sentiment="negative">비선호</button>
+                </div>
               </div>
               <div class="dual-actions">
                 <button class="inline-btn" id="inputBackBtn">이전</button>
@@ -1622,6 +1653,8 @@
 
     <script defer src="/_vercel/insights/script.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="./tagDictionary.js"></script>
+    <script src="./tagMatcher.js"></script>
     <script>
       const DEFAULT_FALLBACK = [37.5665, 126.978];
 
@@ -1694,6 +1727,8 @@
       const mapDim = document.getElementById("mapDim");
       const selectedSegmentText = document.getElementById("selectedSegmentText");
       const speechText = document.getElementById("speechText");
+      const manualTagSelector = document.getElementById("manualTagSelector");
+      const manualTagBtns = Array.from(document.querySelectorAll(".manual-tag-btn"));
       const summaryText = document.getElementById("summaryText");
       const reasonChip = document.getElementById("reasonChip");
       const delayChip = document.getElementById("delayChip");
@@ -2185,7 +2220,52 @@
       brushLayer.addEventListener("mousemove", moveBrush);
       window.addEventListener("mouseup", () => endBrush());
 
+      function getManualSelectedTags() {
+        return manualTagBtns
+          .filter((btn) => btn.classList.contains("active"))
+          .map((btn) => ({
+            category: btn.dataset.category,
+            label: btn.dataset.label,
+            sentiment: btn.dataset.sentiment,
+            matchedKeyword: "manual",
+          }));
+      }
+
+      function buildIntentFromTags(text, analysis, manualTags = []) {
+        const matchedTags = analysis.matchedTags.length ? analysis.matchedTags : manualTags;
+        const preferenceType = analysis.preferenceType
+          || (matchedTags.filter((tag) => tag.sentiment === "positive").length > matchedTags.filter((tag) => tag.sentiment === "negative").length ? "prefer" : "avoid");
+        const timeTags = matchedTags.filter((tag) => tag.category === "time_context").map((tag) => tag.matchedKeyword);
+        const weatherTags = matchedTags.filter((tag) => tag.category === "weather_context").map((tag) => tag.matchedKeyword);
+        const condition = [...new Set([...timeTags, ...weatherTags])].join(" · ") || "상시";
+        return {
+          destination: destinationInput.value.trim() || "현재 목적지",
+          message: analysis.summary,
+          tags: matchedTags.map((tag) => `#${tag.label.replace(/\s+/g, "")}`),
+          preferenceType,
+          ruleType: analysis.needsManualSelection ? "manual" : "rule-based-keyword",
+          raw: text,
+          condition,
+          originalText: analysis.originalText,
+          matchedTags,
+          needsManualSelection: analysis.needsManualSelection,
+        };
+      }
+
       function parseUserIntent(text) {
+        const matcher = window.RouteTagMatcher?.matchRouteSegmentTags;
+        if (matcher) {
+          const analysis = matcher(text);
+          const manualTags = getManualSelectedTags();
+          if (analysis.needsManualSelection && !manualTags.length) {
+            manualTagSelector.classList.add("show");
+            showToast("감지된 키워드가 없어요. 직접 태그를 선택해 주세요.", 2200);
+            return null;
+          }
+          manualTagSelector.classList.toggle("show", analysis.needsManualSelection);
+          return buildIntentFromTags(text, analysis, manualTags);
+        }
+
         const rules = [
           {
             type: "risk",
@@ -2271,7 +2351,10 @@
         summaryText.textContent = intent.message;
         reasonChip.textContent = intent.tags.join(" ");
         delayChip.textContent = `적용 조건: 목적지 ${intent.destination} 이동 시 ${intent.condition} 선택 구간 ${modeText}`;
-        ruleDetailText.textContent = `입력 원문: "${intent.raw}"`;
+        const matchedTagText = intent.matchedTags?.length
+          ? `\n자동 태그: ${intent.matchedTags.map((tag) => `${tag.category}/${tag.matchedKeyword}`).join(", ")}`
+          : "";
+        ruleDetailText.textContent = `입력 원문: "${intent.raw}"${matchedTagText}`;
         doneText.textContent = summaryText.textContent;
       }
 
@@ -2490,15 +2573,23 @@
         setUI(UI_STATE.SELECT);
       });
 
+      manualTagBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          btn.classList.toggle("active");
+        });
+      });
+
       document.getElementById("parseBtn").addEventListener("click", () => {
         const text = speechText.value.trim();
         if (!text) {
           showToast("구간에 대한 설명을 먼저 입력해 주세요.");
           return;
         }
-        state.activeIntent = parseUserIntent(text);
+        const intent = parseUserIntent(text);
+        if (!intent) return;
+        state.activeIntent = intent;
         state.tagMode = state.activeIntent.preferenceType;
-          renderRule(state.activeIntent);
+        renderRule(state.activeIntent);
         setUI(UI_STATE.CONFIRM);
       });
 
