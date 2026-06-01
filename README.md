@@ -86,6 +86,23 @@ NAVER_SEARCH_CLIENT_SECRET=여기에_네이버_개발자_검색_Client_Secret
 
 `.env`는 `.gitignore`에 들어가 있으므로 커밋하지 않습니다. 로컬에서는 Vercel 서버리스 함수가 필요하므로 일반 정적 서버 대신 `vercel dev` 방식으로 실행해야 `/api/*`가 같이 동작합니다.
 
+
+## 배포 후 바로 확인하는 방법
+
+Vercel에 환경 변수를 넣고 Redeploy 한 다음, 배포 주소 뒤에 아래 경로를 붙여서 확인할 수 있습니다.
+
+```txt
+https://내-vercel-도메인.vercel.app/api/naver-health
+```
+
+위 주소는 키 값 자체는 보여주지 않고, `NAVER_MAP_CLIENT_ID`, `NAVER_MAP_CLIENT_SECRET`, `NAVER_SEARCH_CLIENT_ID`, `NAVER_SEARCH_CLIENT_SECRET`이 들어왔는지만 `true/false`로 보여줍니다. 실제 네이버 API 호출까지 확인하려면 아래처럼 `live=1`을 붙입니다.
+
+```txt
+https://내-vercel-도메인.vercel.app/api/naver-health?live=1
+```
+
+`live=1` 결과에서 `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다.
+
 ## 네이버 콘솔에서 켤 서비스
 
 Naver Cloud Platform 콘솔의 Maps Application에서 아래 서비스를 활성화해 주세요.
