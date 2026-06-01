@@ -125,7 +125,22 @@ https://내-vercel-도메인.vercel.app/api/naver-health
 https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 ```
 
-`live=1` 결과에서 `configured.mapNcpKeyId`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_CLIENT_ID` 쪽이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID` 쪽이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다. 그래도 브라우저 지도가 안 뜨면 아래의 Web Dynamic Map 도메인 등록 문제일 가능성이 큽니다.
+`live=1` 결과에서 `configured.mapNcpKeyId`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_CLIENT_ID` 쪽이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID` 쪽이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다.
+
+`credentialRouting`도 같이 확인할 수 있습니다. 정상 연결이면 다음처럼 나와야 합니다.
+
+```json
+{
+  "credentialRouting": {
+    "mapSdk": { "console": "Naver Cloud Platform Maps", "envSource": "NAVER_CLOUD_MAPS_NCP_KEY_ID" },
+    "geocode": { "console": "Naver Cloud Platform Maps", "clientIdEnvSource": "NAVER_CLOUD_MAPS_CLIENT_ID" },
+    "directions": { "console": "Naver Cloud Platform Maps", "clientIdEnvSource": "NAVER_CLOUD_MAPS_CLIENT_ID" },
+    "localSearch": { "console": "Naver Developers", "clientIdEnvSource": "NAVER_DEVELOPERS_SEARCH_CLIENT_ID" }
+  }
+}
+```
+
+그래도 브라우저 지도가 안 뜨면 아래의 Web Dynamic Map 도메인 등록 문제일 가능성이 큽니다.
 
 
 
