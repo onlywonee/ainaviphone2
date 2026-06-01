@@ -2,6 +2,7 @@ const {
   fetchNaverMapJson,
   fetchNaverSearchJson,
   getNaverMapCredentials,
+  getNaverMapSdkKeyId,
   getNaverSearchCredentials,
   hasCredentials,
   sendJson,
@@ -75,17 +76,20 @@ module.exports = async function handler(req, res) {
 
   const mapCredentials = getNaverMapCredentials();
   const searchCredentials = getNaverSearchCredentials();
+  const mapSdkKeyId = getNaverMapSdkKeyId();
   const live = req.query?.live === "1" || req.query?.live === "true";
 
   const payload = {
     ok: hasCredentials(mapCredentials),
     configured: {
+      mapNcpKeyId: Boolean(mapSdkKeyId),
       mapClientId: Boolean(mapCredentials.clientId),
       mapClientSecret: Boolean(mapCredentials.clientSecret),
       searchClientId: Boolean(searchCredentials.clientId),
       searchClientSecret: Boolean(searchCredentials.clientSecret),
     },
     liveChecked: live,
+    mapSdkAuthHint: mapSdkKeyId ? "If the map still fails, check Naver Cloud Web Dynamic Map service URL/domain restrictions." : "Set NAVER_MAP_NCP_KEY_ID or NAVER_MAP_CLIENT_ID.",
   };
 
   if (live) {

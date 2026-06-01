@@ -1,8 +1,16 @@
 const NAVER_MAPS_BASE_URL = "https://naveropenapi.apigw.ntruss.com";
 const NAVER_SEARCH_BASE_URL = "https://openapi.naver.com";
 
+function getNaverMapSdkKeyId() {
+  return process.env.NAVER_MAP_NCP_KEY_ID
+    || process.env.NAVER_MAP_CLIENT_ID
+    || process.env.NAVER_MAPS_CLIENT_ID;
+}
+
 function getNaverMapCredentials() {
-  const clientId = process.env.NAVER_MAP_CLIENT_ID || process.env.NAVER_MAPS_CLIENT_ID;
+  const clientId = process.env.NAVER_MAP_CLIENT_ID
+    || process.env.NAVER_MAP_NCP_KEY_ID
+    || process.env.NAVER_MAPS_CLIENT_ID;
   const clientSecret = process.env.NAVER_MAP_CLIENT_SECRET || process.env.NAVER_MAPS_CLIENT_SECRET;
   return { clientId, clientSecret };
 }
@@ -100,6 +108,7 @@ module.exports = {
   fetchNaverSearchJson,
   getNaverCredentials,
   getNaverMapCredentials,
+  getNaverMapSdkKeyId,
   getNaverSearchCredentials,
   hasCredentials,
   requireNaverCredentials,
