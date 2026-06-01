@@ -9,30 +9,17 @@ function pickEnv(names) {
   return { value: undefined, source: null };
 }
 
-function getNaverMapSdkKeyId() {
-  const picked = pickEnv([
-    "NAVER_CLOUD_MAPS_NCP_KEY_ID",
-    "NAVER_MAP_NCP_KEY_ID",
-    "NAVER_CLOUD_MAPS_CLIENT_ID",
-    "NAVER_MAP_CLIENT_ID",
-    "NAVER_MAPS_CLIENT_ID",
-  ]);
-  return picked.value;
-}
-
 function getNaverMapCredentials() {
   const clientId = pickEnv([
-    "NAVER_CLOUD_MAPS_CLIENT_ID",
-    "NAVER_MAP_CLIENT_ID",
     "NAVER_CLOUD_MAPS_NCP_KEY_ID",
     "NAVER_MAP_NCP_KEY_ID",
-    "NAVER_MAPS_CLIENT_ID",
+    "NAVER_MAP_CLIENT_ID",
   ]);
   const clientSecret = pickEnv([
     "NAVER_CLOUD_MAPS_CLIENT_SECRET",
     "NAVER_MAP_CLIENT_SECRET",
-    "NAVER_MAPS_CLIENT_SECRET",
   ]);
+
   return {
     clientId: clientId.value,
     clientSecret: clientSecret.value,
@@ -41,19 +28,26 @@ function getNaverMapCredentials() {
       clientSecret: clientSecret.source,
     },
   };
+}
+
+function getNaverMapSdkKeyId() {
+  return getNaverMapCredentials().clientId;
+}
+
+function getNaverMapSdkKeySource() {
+  return getNaverMapCredentials().sources.clientId;
 }
 
 function getNaverSearchCredentials() {
   const clientId = pickEnv([
     "NAVER_DEVELOPERS_SEARCH_CLIENT_ID",
     "NAVER_SEARCH_CLIENT_ID",
-    "NAVER_DEVELOPER_CLIENT_ID",
   ]);
   const clientSecret = pickEnv([
     "NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET",
     "NAVER_SEARCH_CLIENT_SECRET",
-    "NAVER_DEVELOPER_CLIENT_SECRET",
   ]);
+
   return {
     clientId: clientId.value,
     clientSecret: clientSecret.value,
@@ -62,16 +56,6 @@ function getNaverSearchCredentials() {
       clientSecret: clientSecret.source,
     },
   };
-}
-
-function getNaverMapSdkKeySource() {
-  return pickEnv([
-    "NAVER_CLOUD_MAPS_NCP_KEY_ID",
-    "NAVER_MAP_NCP_KEY_ID",
-    "NAVER_CLOUD_MAPS_CLIENT_ID",
-    "NAVER_MAP_CLIENT_ID",
-    "NAVER_MAPS_CLIENT_ID",
-  ]).source;
 }
 
 function getNaverCredentials() {
@@ -94,7 +78,7 @@ function requireNaverMapCredentials(res) {
   if (!hasCredentials(credentials)) {
     sendJson(res, 500, {
       error: "missing_naver_map_credentials",
-      message: "NAVER_MAP_CLIENT_ID/NAVER_CLOUD_MAPS_CLIENT_ID and NAVER_MAP_CLIENT_SECRET/NAVER_CLOUD_MAPS_CLIENT_SECRET must be configured as server environment variables.",
+      message: "NAVER_CLOUD_MAPS_NCP_KEY_ID and NAVER_CLOUD_MAPS_CLIENT_SECRET must be configured as server environment variables.",
     });
     return null;
   }

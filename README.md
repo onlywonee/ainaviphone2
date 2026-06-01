@@ -4,7 +4,7 @@
 
 이 앱은 네이버 지도를 표시하고, 목적지 검색과 자동차 경로 생성을 네이버 Cloud Maps API로 호출합니다.
 
-현재 화면에 `NAVER_MAP_CLIENT_ID 환경 변수가 없어 네이버 지도를 불러오지 못했습니다.`가 보이면 **코드 안에 키를 넣는 게 아니라 배포/로컬 실행 환경 변수에 키를 넣어야 한다**는 뜻입니다.
+현재 화면에 네이버 지도 인증 오류가 보이면 **코드 안에 키를 넣는 게 아니라 Vercel 환경 변수와 네이버 콘솔의 Web 서비스 URL 등록을 확인해야 한다**는 뜻입니다.
 
 ## 바로 넣어야 하는 값
 
@@ -118,7 +118,7 @@ https://내-vercel-도메인.vercel.app/api/naver-health
 https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 ```
 
-`live=1` 결과에서 `configured.mapNcpKeyId`, `configured.mapClientSecret`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 쪽이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID` 쪽이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다.
+`live=1` 결과에서 `configured.mapNcpKeyId`, `configured.mapClientSecret`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_NCP_KEY_ID`이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID`이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다.
 
 `credentialRouting`도 같이 확인할 수 있습니다. 정상 연결이면 다음처럼 나와야 합니다.
 
@@ -150,7 +150,7 @@ https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 
 1. **잘못된 지도 SDK 키**
    - 네이버 지도 JavaScript SDK는 `ncpKeyId` 파라미터로 인증합니다.
-   - Vercel에 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 또는 `NAVER_MAP_NCP_KEY_ID`를 추가하고, 값은 Naver Cloud Platform Maps Application의 Web Dynamic Map `ncpKeyId`를 넣으세요.
+   - Vercel에 `NAVER_CLOUD_MAPS_NCP_KEY_ID`를 추가하고, 값은 첫 번째 캡처의 `Client ID (X-NCP-APIGW-API-KEY-ID)`를 넣으세요.
    - 현재 설정은 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 하나를 지도 SDK와 REST API Client ID로 같이 사용합니다.
 
 2. **Web Dynamic Map 서비스 URL/도메인 미등록**

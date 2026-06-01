@@ -19,7 +19,7 @@ function redactError(error) {
 
 async function checkLocalSearch(credentials) {
   if (!hasCredentials(credentials)) {
-    return { ok: false, skipped: true, message: "NAVER_DEVELOPERS_SEARCH_CLIENT_ID/SECRET or NAVER_SEARCH_CLIENT_ID/SECRET not configured" };
+    return { ok: false, skipped: true, message: "NAVER_DEVELOPERS_SEARCH_CLIENT_ID/SECRET not configured" };
   }
 
   try {
@@ -37,7 +37,7 @@ async function checkLocalSearch(credentials) {
 
 async function checkGeocode(credentials) {
   if (!hasCredentials(credentials)) {
-    return { ok: false, skipped: true, message: "NAVER_CLOUD_MAPS_CLIENT_ID/SECRET or NAVER_MAP_CLIENT_ID/SECRET not configured" };
+    return { ok: false, skipped: true, message: "NAVER_CLOUD_MAPS_NCP_KEY_ID and NAVER_CLOUD_MAPS_CLIENT_SECRET not configured" };
   }
 
   try {
@@ -53,7 +53,7 @@ async function checkGeocode(credentials) {
 
 async function checkDirections(credentials) {
   if (!hasCredentials(credentials)) {
-    return { ok: false, skipped: true, message: "NAVER_CLOUD_MAPS_CLIENT_ID/SECRET or NAVER_MAP_CLIENT_ID/SECRET not configured" };
+    return { ok: false, skipped: true, message: "NAVER_CLOUD_MAPS_NCP_KEY_ID and NAVER_CLOUD_MAPS_CLIENT_SECRET not configured" };
   }
 
   try {
@@ -108,7 +108,7 @@ module.exports = async function handler(req, res) {
         purpose: "Maps Geocoding REST API",
         clientIdEnvSource: mapCredentials.sources?.clientId || null,
         clientSecretEnvSource: mapCredentials.sources?.clientSecret || null,
-        expectedClientIdEnv: "NAVER_CLOUD_MAPS_CLIENT_ID",
+        expectedClientIdEnv: "NAVER_CLOUD_MAPS_NCP_KEY_ID",
         expectedClientSecretEnv: "NAVER_CLOUD_MAPS_CLIENT_SECRET",
       },
       directions: {
@@ -116,7 +116,7 @@ module.exports = async function handler(req, res) {
         purpose: "Maps Directions 5 REST API",
         clientIdEnvSource: mapCredentials.sources?.clientId || null,
         clientSecretEnvSource: mapCredentials.sources?.clientSecret || null,
-        expectedClientIdEnv: "NAVER_CLOUD_MAPS_CLIENT_ID",
+        expectedClientIdEnv: "NAVER_CLOUD_MAPS_NCP_KEY_ID",
         expectedClientSecretEnv: "NAVER_CLOUD_MAPS_CLIENT_SECRET",
       },
       localSearch: {
@@ -129,7 +129,7 @@ module.exports = async function handler(req, res) {
       },
     },
     liveChecked: live,
-    mapSdkAuthHint: mapSdkKeyId ? "If the map still fails, check Naver Cloud Web Dynamic Map service URL/domain restrictions." : "Set NAVER_CLOUD_MAPS_NCP_KEY_ID or NAVER_MAP_NCP_KEY_ID.",
+    mapSdkAuthHint: mapSdkKeyId ? "If the map still fails, check Naver Cloud Web Dynamic Map service URL/domain restrictions." : "Set NAVER_CLOUD_MAPS_NCP_KEY_ID.",
   };
 
   if (live) {
