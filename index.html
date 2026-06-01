@@ -18,12 +18,6 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/assets/icons/myroute-icon.svg" />
     <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/myroute-icon.svg" />
     <link rel="apple-touch-startup-image" href="/assets/splash/iphone16-splash.svg" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
     <style>
       :root {
         color-scheme: dark;
@@ -1058,10 +1052,6 @@
 
       .hidden { display: none !important; }
 
-      .leaflet-control-zoom {
-        display: none;
-      }
-
       .segment-label {
         background: rgba(255, 255, 255, 0.98);
         border-radius: 999px;
@@ -1652,7 +1642,7 @@
     </main>
 
     <script defer src="/_vercel/insights/script.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/api/naver-maps.js"></script>
     <script src="./tagDictionary.js"></script>
     <script src="./tagMatcher.js"></script>
     <script>
@@ -1695,11 +1685,116 @@
         isPinching: false,
       };
 
-      const map = L.map("map", { zoomControl: false, doubleClickZoom: false }).setView(DEFAULT_FALLBACK, 16);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap',
-      }).addTo(map);
+      if (!window.naver?.maps) {
+        const reason = window.__NAVER_MAPS_LOAD_ERROR__ || "네이버 지도 스크립트를 불러오지 못했습니다.";
+        document.getElementById("map").innerHTML = `<div style="position:absolute;inset:0;display:grid;place-items:center;padding:28px;text-align:center;background:#0f1521;color:#fff;font-weight:800;line-height:1.5;">${reason}<br><span style="display:block;margin-top:10px;font-size:13px;color:#b9c2d0;font-weight:600;">Vercel 환경 변수 NAVER_MAP_CLIENT_ID를 설정해 주세요.</span></div>`;
+        throw new Error(reason);
+      }
+
+      function toNaverLatLng(latlng) {
+        return latlng instanceof naver.maps.LatLng ? latlng : new naver.maps.LatLng(latlng[0], latlng[1]);
+      }
+
+      function fromNaverLatLng(coord) {
+        const lat = typeof coord.lat === "function" ? coord.lat() : coord.lat ?? coord.y;
+        const lng = typeof coord.lng === "function" ? coord.lng() : coord.lng ?? coord.x;
+        return [lat, lng];
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function removeOverlay(overlay) {
+        if (overlay?.setMap) overlay.setMap(null);
+      }
+
+      function createPolyline(path, options = {}) {
+        return new naver.maps.Polyline({
+          map,
+          path: path.map(toNaverLatLng),
+          strokeColor: options.color || options.strokeColor || "#0a66ff",
+          strokeWeight: options.weight || options.strokeWeight || 6,
+          strokeOpacity: options.opacity ?? options.strokeOpacity ?? 1,
+          strokeLineCap: options.lineCap || "round",
+          strokeLineJoin: options.lineJoin || "round",
+        });
+      }
+
+      function setPolylineLatLngs(polyline, path) {
+        polyline.setPath(path.map(toNaverLatLng));
+      }
+
+      function createCircle(center, options = {}) {
+        return new naver.maps.Circle({
+          map,
+          center: toNaverLatLng(center),
+          radius: options.radius || 30,
+          strokeColor: options.color || "#0a66ff",
+          strokeWeight: options.weight || 1,
+          strokeOpacity: options.opacity ?? 1,
+          fillColor: options.fillColor || options.color || "#0a66ff",
+          fillOpacity: options.fillOpacity ?? 0.15,
+        });
+      }
+
+      function createHtmlMarker(latlng, html, size = [26, 26], anchor = [13, 24]) {
+        return new naver.maps.Marker({
+          map,
+          position: toNaverLatLng(latlng),
+          icon: {
+            content: html,
+            size: new naver.maps.Size(size[0], size[1]),
+            anchor: new naver.maps.Point(anchor[0], anchor[1]),
+          },
+        });
+      }
+
+      function setCircleLatLng(circle, latlng) {
+        circle.setCenter(toNaverLatLng(latlng));
+      }
+
+      function distanceMeters(a, b) {
+        const [lat1, lng1] = Array.isArray(a) ? a : fromNaverLatLng(a);
+        const [lat2, lng2] = Array.isArray(b) ? b : fromNaverLatLng(b);
+        const toRad = (deg) => (deg * Math.PI) / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const rLat1 = toRad(lat1);
+        const rLat2 = toRad(lat2);
+        const h = Math.sin(dLat / 2) ** 2 + Math.cos(rLat1) * Math.cos(rLat2) * Math.sin(dLng / 2) ** 2;
+        return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+      }
+
+      function setMapGestures(enabled) {
+        map.setOptions({
+          draggable: enabled,
+          pinchZoom: true,
+          scrollWheel: enabled,
+          keyboardShortcuts: enabled,
+        });
+      }
+
+      function fitRouteBounds(path) {
+        if (!path?.length) return;
+        const bounds = new naver.maps.LatLngBounds(toNaverLatLng(path[0]), toNaverLatLng(path[0]));
+        path.forEach((point) => bounds.extend(toNaverLatLng(point)));
+        map.fitBounds(bounds, { top: 170, right: 26, bottom: 210, left: 26 });
+        if (map.getZoom() > 16) map.setZoom(16);
+      }
+
+      const map = new naver.maps.Map("map", {
+        center: toNaverLatLng(DEFAULT_FALLBACK),
+        zoom: 16,
+        zoomControl: false,
+        mapDataControl: false,
+        scaleControl: false,
+      });
 
       const app = document.getElementById("app");
       const simpleSearchInput = document.getElementById("simpleSearchInput");
@@ -1832,13 +1927,7 @@
         aiTagBtn.setAttribute("aria-pressed", brushActive ? "true" : "false");
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
-        if (brushActive) {
-          map.touchZoom.enable();
-          map.dragging.enable();
-        } else {
-          map.touchZoom.enable();
-          map.dragging.enable();
-        }
+        setMapGestures(true);
         updateAiRouteGlow(brushActive);
         bottomNav.classList.add("hidden");
       }
@@ -1846,58 +1935,48 @@
       function updateAiRouteGlow(enabled) {
         if (!enabled || !state.baseRoute?.length) {
           if (state.aiGlowLine) {
-            map.removeLayer(state.aiGlowLine);
+            removeOverlay(state.aiGlowLine);
             state.aiGlowLine = null;
           }
           if (state.aiGlowAuraLine) {
-            map.removeLayer(state.aiGlowAuraLine);
+            removeOverlay(state.aiGlowAuraLine);
             state.aiGlowAuraLine = null;
           }
           return;
         }
         if (!state.aiGlowAuraLine) {
-          state.aiGlowAuraLine = L.polyline(state.baseRoute, {
+          state.aiGlowAuraLine = createPolyline(state.baseRoute, {
             color: "#ff9ae9",
             weight: 20,
             opacity: 0.5,
-            className: "ai-route-glow-aura",
-          }).addTo(map);
+          });
         }
         if (!state.aiGlowLine) {
-          state.aiGlowLine = L.polyline(state.baseRoute, {
+          state.aiGlowLine = createPolyline(state.baseRoute, {
             color: "#9ec2ff",
             weight: 12,
             opacity: 0.95,
-            className: "ai-route-glow",
-          }).addTo(map);
+          });
         }
       }
 
-      function toLngLat(latlng) {
-        return `${latlng[1]},${latlng[0]}`;
-      }
-
       async function fetchRoute(coords) {
-        const routePart = coords.map(toLngLat).join(";");
-        const url = `https://router.project-osrm.org/route/v1/driving/${routePart}?overview=full&geometries=geojson&alternatives=false&steps=false`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("route api failed");
-        const json = await res.json();
-        if (!json.routes?.length) throw new Error("route not found");
-        return json.routes[0];
+        const coordParam = coords.map((point) => `${point[0]},${point[1]}`).join("|");
+        const url = `/api/directions?coords=${encodeURIComponent(coordParam)}`;
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        if (!res.ok) throw new Error("naver directions api failed");
+        const route = await res.json();
+        if (!route.geometry?.coordinates?.length) throw new Error("route not found");
+        return route;
       }
 
       async function geocodePlace(query) {
-        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q=${encodeURIComponent(query)}`;
+        const url = `/api/geocode?query=${encodeURIComponent(query)}`;
         const res = await fetch(url, { headers: { "Accept": "application/json" } });
-        if (!res.ok) throw new Error("geocode failed");
-        const rows = await res.json();
-        if (!rows.length) throw new Error("destination not found");
-        return {
-          lat: Number(rows[0].lat),
-          lng: Number(rows[0].lon),
-          label: rows[0].display_name,
-        };
+        if (!res.ok) throw new Error("naver geocode api failed");
+        const place = await res.json();
+        if (!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) throw new Error("destination not found");
+        return place;
       }
 
       function nearestRouteIndex(latlng) {
@@ -1916,14 +1995,7 @@
       }
 
       function addFlag(latlng) {
-        const marker = L.marker(latlng, {
-          icon: L.divIcon({
-            className: "",
-            html: '<div class="flag-pin">📍</div>',
-            iconSize: [26, 26],
-            iconAnchor: [13, 24],
-          }),
-        }).addTo(map);
+        const marker = createHtmlMarker(latlng, '<div class="flag-pin">📍</div>', [26, 26], [13, 24]);
         state.selectedMarkers.push(marker);
       }
 
@@ -1933,14 +2005,14 @@
         state.selectedCenter = null;
         state.selectedRadiusM = 0;
         state.brushLatLngs = [];
-        state.selectedMarkers.forEach((m) => map.removeLayer(m));
+        state.selectedMarkers.forEach((m) => removeOverlay(m));
         state.selectedMarkers = [];
-        if (state.selectionLine) map.removeLayer(state.selectionLine);
-        if (state.selectionGlowLine) map.removeLayer(state.selectionGlowLine);
-        if (state.brushLine) map.removeLayer(state.brushLine);
-        if (state.correctedArea) map.removeLayer(state.correctedArea);
-        if (state.aiGlowLine) map.removeLayer(state.aiGlowLine);
-        if (state.aiGlowAuraLine) map.removeLayer(state.aiGlowAuraLine);
+        if (state.selectionLine) removeOverlay(state.selectionLine);
+        if (state.selectionGlowLine) removeOverlay(state.selectionGlowLine);
+        if (state.brushLine) removeOverlay(state.brushLine);
+        if (state.correctedArea) removeOverlay(state.correctedArea);
+        if (state.aiGlowLine) removeOverlay(state.aiGlowLine);
+        if (state.aiGlowAuraLine) removeOverlay(state.aiGlowAuraLine);
         state.selectionLine = null;
         state.selectionGlowLine = null;
         state.brushLine = null;
@@ -1963,8 +2035,9 @@
         routeTimeEls.forEach((el) => {
           el.textContent = `${mins}분`;
         });
+        const tollText = route.tollFare ? `통행료 ${route.tollFare.toLocaleString("ko-KR")}원` : "통행료 없음";
         routeMetaEls.forEach((el) => {
-          el.innerHTML = `${km}km <span style="color:#b6b6b6; margin-left:6px;">통행료 없음</span>`;
+          el.innerHTML = `${km}km <span style="color:#b6b6b6; margin-left:6px;">${tollText}</span>`;
         });
       }
 
@@ -1979,37 +2052,37 @@
         originInput.value = `내 위치 (${latlng[0].toFixed(5)}, ${latlng[1].toFixed(5)})`;
 
         if (!userMarker) {
-          userMarker = L.circleMarker(latlng, {
+          userMarker = createCircle(latlng, {
             radius: 8,
             color: "#fff",
             weight: 2,
             fillColor: "#0a66ff",
             fillOpacity: 1,
-          }).addTo(map);
+          });
         } else {
-          userMarker.setLatLng(latlng);
+          setCircleLatLng(userMarker, latlng);
         }
 
         if (!accuracyCircle) {
-          accuracyCircle = L.circle(latlng, {
+          accuracyCircle = createCircle(latlng, {
             radius: Math.max(20, Math.min(accuracy, 120)),
             color: "#3e8dff",
             fillColor: "#3e8dff",
             fillOpacity: 0.13,
             weight: 1,
-          }).addTo(map);
+          });
         } else {
-          accuracyCircle.setLatLng(latlng);
+          setCircleLatLng(accuracyCircle, latlng);
           accuracyCircle.setRadius(Math.max(20, Math.min(accuracy, 120)));
         }
 
-        map.setView(latlng, 18, { animate: true });
+        map.morph(toNaverLatLng(latlng), 18);
       }
 
       function clearCurrentRoute() {
-        if (baseLine) map.removeLayer(baseLine);
-        if (routeHitLine) map.removeLayer(routeHitLine);
-        if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+        if (baseLine) removeOverlay(baseLine);
+        if (routeHitLine) removeOverlay(routeHitLine);
+        if (state.rerouteLine) removeOverlay(state.rerouteLine);
         baseLine = null;
         routeHitLine = null;
         state.rerouteLine = null;
@@ -2018,15 +2091,18 @@
         state.activeIntent = null;
         updateRouteTitleOrder();
         if (destinationMarker) {
-          map.removeLayer(destinationMarker);
+          removeOverlay(destinationMarker);
           destinationMarker = null;
         }
       }
 
       function getBrushLatLng(event) {
         const sourcePoint = event.touches?.[0] || event.changedTouches?.[0] || event;
-        const containerPoint = map.mouseEventToContainerPoint(sourcePoint);
-        return map.containerPointToLatLng(containerPoint);
+        const rect = document.getElementById("map").getBoundingClientRect();
+        const offset = new naver.maps.Point(sourcePoint.clientX - rect.left, sourcePoint.clientY - rect.top);
+        const coord = map.getProjection().fromOffsetToCoord(offset);
+        const [lat, lng] = fromNaverLatLng(coord);
+        return { lat, lng };
       }
 
       function computeBrushArea(points) {
@@ -2035,7 +2111,7 @@
         const center = [centerLat, centerLng];
         let radius = 40;
         points.forEach((p) => {
-          const d = map.distance(center, p);
+          const d = distanceMeters(center, p);
           if (d > radius) radius = d;
         });
         return { center, radius: Math.max(35, Math.min(radius * 1.1, 300)) };
@@ -2047,36 +2123,34 @@
         state.selectedCenter = center;
         state.selectedRadiusM = radius;
 
-        if (state.correctedArea) map.removeLayer(state.correctedArea);
-        state.correctedArea = L.circle(center, {
+        if (state.correctedArea) removeOverlay(state.correctedArea);
+        state.correctedArea = createCircle(center, {
           radius,
           color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
           weight: 3,
           fillColor: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
           fillOpacity: 0.2,
-        }).addTo(map);
+        });
 
         if (state.baseRoute?.length) {
-          const chunk = state.baseRoute.filter((pt) => map.distance(center, pt) <= radius);
+          const chunk = state.baseRoute.filter((pt) => distanceMeters(center, pt) <= radius);
           state.selectedLatLngs = chunk;
 
-          if (state.selectionGlowLine) map.removeLayer(state.selectionGlowLine);
-          if (state.selectionLine) map.removeLayer(state.selectionLine);
+          if (state.selectionGlowLine) removeOverlay(state.selectionGlowLine);
+          if (state.selectionLine) removeOverlay(state.selectionLine);
 
           if (chunk.length >= 2) {
-            state.selectionGlowLine = L.polyline(chunk, {
+            state.selectionGlowLine = createPolyline(chunk, {
               color: state.tagMode === "prefer" ? "#79f3b2" : "#ff9dcc",
               weight: 18,
               opacity: 0.42,
-              className: "selected-glow-outer",
-            }).addTo(map);
+            });
 
-            state.selectionLine = L.polyline(chunk, {
+            state.selectionLine = createPolyline(chunk, {
               color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
               weight: 8,
               opacity: 0.98,
-              className: "selected-glow-core",
-            }).addTo(map);
+            });
           }
         }
 
@@ -2094,10 +2168,7 @@
       function focusSelectedSegment(center, radius) {
         const currentZoom = map.getZoom();
         const targetZoom = radius <= 80 ? 18 : radius <= 170 ? 17 : 16;
-        map.flyTo(center, Math.max(currentZoom, targetZoom), {
-          animate: true,
-          duration: 0.45,
-        });
+        map.morph(toNaverLatLng(center), Math.max(currentZoom, targetZoom));
       }
 
       function activatePersonalizationMode() {
@@ -2117,7 +2188,7 @@
         state.personalizationMode = false;
         state.isBrushing = false;
         state.isPinching = false;
-        map.dragging.enable();
+        setMapGestures(true);
         brushLayer.style.pointerEvents = "none";
         resetSelection(false);
         setUI(UI_STATE.ROUTE);
@@ -2148,31 +2219,31 @@
         if (event.touches && event.touches.length > 1) {
           state.isPinching = true;
           state.isBrushing = false;
-          map.dragging.enable();
+          setMapGestures(true);
           return;
         }
         if (state.isPinching) return;
         if (event.cancelable) event.preventDefault();
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
-        map.dragging.disable();
+        setMapGestures(false);
         state.isBrushing = true;
         state.brushLatLngs = [[latlng.lat, latlng.lng]];
-        if (state.brushLine) map.removeLayer(state.brushLine);
-        state.brushLine = L.polyline(state.brushLatLngs, {
+        if (state.brushLine) removeOverlay(state.brushLine);
+        state.brushLine = createPolyline(state.brushLatLngs, {
           color: "#8fb7ff",
           weight: 10,
           opacity: 0.75,
           lineCap: "round",
           lineJoin: "round",
-        }).addTo(map);
+        });
       }
 
       function moveBrush(event) {
         if (event.touches && event.touches.length > 1) {
           state.isPinching = true;
           state.isBrushing = false;
-          map.dragging.enable();
+          setMapGestures(true);
           return;
         }
         if (!state.isBrushing || state.isPinching) return;
@@ -2180,7 +2251,7 @@
         const latlng = getBrushLatLng(event);
         if (!latlng) return;
         state.brushLatLngs.push([latlng.lat, latlng.lng]);
-        if (state.brushLine) state.brushLine.setLatLngs(state.brushLatLngs);
+        if (state.brushLine) setPolylineLatLngs(state.brushLine, state.brushLatLngs);
       }
 
       function endBrush(event) {
@@ -2188,12 +2259,12 @@
         if (remainTouches > 0) return;
         if (state.isPinching) {
           state.isPinching = false;
-          map.dragging.enable();
+          setMapGestures(true);
           return;
         }
         if (!state.isBrushing) return;
         state.isBrushing = false;
-        map.dragging.enable();
+        setMapGestures(true);
         highlightSelectionFromBrush();
       }
 
@@ -2358,25 +2429,45 @@
         doneText.textContent = summaryText.textContent;
       }
 
+      function normalizeTagKeyword(keyword) {
+        return String(keyword || "")
+          .replace(/^#+/, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function buildIntentKeywordLabel(intent) {
+        const keywordCandidates = [
+          ...(intent?.matchedTags || []).map((tag) => tag.label || tag.matchedKeyword),
+          ...(intent?.tags || []),
+        ];
+        const keywords = [...new Set(keywordCandidates.map(normalizeTagKeyword).filter(Boolean))];
+
+        if (!keywords.length && intent?.condition && intent.condition !== "상시") {
+          keywords.push(...intent.condition.split(/[·,]/).map(normalizeTagKeyword).filter(Boolean));
+        }
+
+        if (!keywords.length) {
+          keywords.push(intent?.preferenceType === "prefer" ? "선호 구간" : "회피 구간");
+        }
+
+        return keywords.slice(0, 3).join(" · ");
+      }
+
       function addTaggedMarker(midpoint) {
         const summary = state.activeIntent
-          ? `${state.activeIntent.destination} · ${state.activeIntent.delay}분 기준 · ${state.tagMode === "prefer" ? "선호" : "회피"}`
+          ? `${state.activeIntent.destination} · ${buildIntentKeywordLabel(state.activeIntent)} · ${state.activeIntent.preferenceType === "prefer" ? "선호" : "회피"}`
           : "저장된 태깅 규칙";
-        const marker = L.marker(midpoint, {
-          icon: L.divIcon({
-            className: "",
-            html: '<div class="tag-pin">AI</div>',
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-          }),
-        }).addTo(map);
-        marker.bindTooltip(summary, {
-          direction: "right",
-          offset: [12, 0],
-          opacity: 0.96,
-          className: "segment-label",
+        const marker = createHtmlMarker(midpoint, '<div class="tag-pin">AI</div>', [32, 32], [16, 16]);
+        const infoWindow = new naver.maps.InfoWindow({
+          content: `<div class="segment-label">${escapeHtml(summary)}</div>`,
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true,
+          pixelOffset: new naver.maps.Point(72, 0),
         });
-        marker.on("click", () => marker.openTooltip());
+        naver.maps.Event.addListener(marker, "click", () => infoWindow.open(map, marker));
+        marker.__infoWindow = infoWindow;
         state.taggedMarkers.push(marker);
       }
 
@@ -2400,13 +2491,12 @@
             : [state.userLocation, calcDetourWaypoint(state.selectedLatLngs.length ? state.selectedLatLngs : [state.selectedCenter]), state.destinationLocation];
           const reroute = await fetchRoute(waypoints);
           const latlngs = reroute.geometry.coordinates.map((c) => [c[1], c[0]]);
-          if (state.rerouteLine) map.removeLayer(state.rerouteLine);
-          state.rerouteLine = L.polyline(latlngs, {
+          if (state.rerouteLine) removeOverlay(state.rerouteLine);
+          state.rerouteLine = createPolyline(latlngs, {
             color: state.tagMode === "prefer" ? "#21c16b" : "#ef5da8",
             weight: 7,
             opacity: 0.92,
-            className: "reroute-line",
-          }).addTo(map);
+          });
           updateRouteTitleOrder();
           showToast(state.tagMode === "prefer" ? "선호 구간을 반영한 경로를 표시했어요." : "회피 구간을 반영한 우회 경로를 표시했어요.", 2200);
         } catch (e) {
@@ -2430,46 +2520,34 @@
           state.destinationLocation = [place.lat, place.lng];
           destinationInput.value = destinationText;
 
-          if (destinationMarker) map.removeLayer(destinationMarker);
-          destinationMarker = L.marker(state.destinationLocation, {
-            icon: L.divIcon({
-              className: "",
-              html: '<div class="flag-pin">🏁</div>',
-              iconSize: [26, 26],
-              iconAnchor: [13, 24],
-            }),
-          }).addTo(map);
+          if (destinationMarker) removeOverlay(destinationMarker);
+          destinationMarker = createHtmlMarker(state.destinationLocation, '<div class="flag-pin">🏁</div>', [26, 26], [13, 24]);
 
           const route = await fetchRoute([state.userLocation, state.destinationLocation]);
           state.baseSeconds = route.duration;
           state.baseRoute = route.geometry.coordinates.map((c) => [c[1], c[0]]);
 
-          if (baseLine) map.removeLayer(baseLine);
-          if (routeHitLine) map.removeLayer(routeHitLine);
-          if (state.rerouteLine) map.removeLayer(state.rerouteLine);
+          if (baseLine) removeOverlay(baseLine);
+          if (routeHitLine) removeOverlay(routeHitLine);
+          if (state.rerouteLine) removeOverlay(state.rerouteLine);
 
-          baseLine = L.polyline(state.baseRoute, {
+          baseLine = createPolyline(state.baseRoute, {
             color: "#0a66ff",
             weight: 8,
             opacity: 0.96,
-          }).addTo(map);
+          });
 
-          routeHitLine = L.polyline(state.baseRoute, {
+          routeHitLine = createPolyline(state.baseRoute, {
             color: "#0a66ff",
             weight: 30,
             opacity: 0.01,
-            className: "route-hit-target",
-          }).addTo(map);
-
-          map.fitBounds(baseLine.getBounds(), {
-            paddingTopLeft: [26, 170],
-            paddingBottomRight: [26, 210],
-            maxZoom: 16,
           });
+
+          fitRouteBounds(state.baseRoute);
 
           updateRouteCards(route);
 
-      setUI(UI_STATE.ROUTE);
+          setUI(UI_STATE.ROUTE);
           setRouteStage(true);
           searchOverlay.classList.add("hidden");
         } catch (e) {
@@ -2489,7 +2567,7 @@
             const latlng = [pos.coords.latitude, pos.coords.longitude];
             renderUserLocation(latlng, pos.coords.accuracy || 40);
             if (recenter) {
-              map.panTo(latlng, { animate: true });
+              map.panTo(toNaverLatLng(latlng));
             }
             showToast("현재 위치를 기준으로 지도를 표시합니다.", 1800);
           },
@@ -2610,7 +2688,7 @@
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
         resetSelection();
-        map.dragging.enable();
+        setMapGestures(true);
         speechText.value = "";
         state.activeIntent = null;
         showToast("태깅만 저장하고 기본 경로를 유지합니다.");
@@ -2620,7 +2698,7 @@
       document.getElementById("rerouteBtn").addEventListener("click", async () => {
         await applyReroute();
         resetSelection();
-        map.dragging.enable();
+        setMapGestures(true);
         speechText.value = "";
                 setUI(UI_STATE.ROUTE);
       });
