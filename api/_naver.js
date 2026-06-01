@@ -1,24 +1,77 @@
 const NAVER_MAPS_BASE_URL = "https://naveropenapi.apigw.ntruss.com";
 const NAVER_SEARCH_BASE_URL = "https://openapi.naver.com";
 
+function pickEnv(names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value) return { value, source: name };
+  }
+  return { value: undefined, source: null };
+}
+
 function getNaverMapSdkKeyId() {
-  return process.env.NAVER_MAP_NCP_KEY_ID
-    || process.env.NAVER_MAP_CLIENT_ID
-    || process.env.NAVER_MAPS_CLIENT_ID;
+  const picked = pickEnv([
+    "NAVER_CLOUD_MAPS_NCP_KEY_ID",
+    "NAVER_MAP_NCP_KEY_ID",
+    "NAVER_CLOUD_MAPS_CLIENT_ID",
+    "NAVER_MAP_CLIENT_ID",
+    "NAVER_MAPS_CLIENT_ID",
+  ]);
+  return picked.value;
 }
 
 function getNaverMapCredentials() {
-  const clientId = process.env.NAVER_MAP_CLIENT_ID
-    || process.env.NAVER_MAP_NCP_KEY_ID
-    || process.env.NAVER_MAPS_CLIENT_ID;
-  const clientSecret = process.env.NAVER_MAP_CLIENT_SECRET || process.env.NAVER_MAPS_CLIENT_SECRET;
-  return { clientId, clientSecret };
+  const clientId = pickEnv([
+    "NAVER_CLOUD_MAPS_CLIENT_ID",
+    "NAVER_MAP_CLIENT_ID",
+    "NAVER_CLOUD_MAPS_NCP_KEY_ID",
+    "NAVER_MAP_NCP_KEY_ID",
+    "NAVER_MAPS_CLIENT_ID",
+  ]);
+  const clientSecret = pickEnv([
+    "NAVER_CLOUD_MAPS_CLIENT_SECRET",
+    "NAVER_MAP_CLIENT_SECRET",
+    "NAVER_MAPS_CLIENT_SECRET",
+  ]);
+  return {
+    clientId: clientId.value,
+    clientSecret: clientSecret.value,
+    sources: {
+      clientId: clientId.source,
+      clientSecret: clientSecret.source,
+    },
+  };
 }
 
 function getNaverSearchCredentials() {
-  const clientId = process.env.NAVER_SEARCH_CLIENT_ID || process.env.NAVER_DEVELOPER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_SEARCH_CLIENT_SECRET || process.env.NAVER_DEVELOPER_CLIENT_SECRET;
-  return { clientId, clientSecret };
+  const clientId = pickEnv([
+    "NAVER_DEVELOPERS_SEARCH_CLIENT_ID",
+    "NAVER_SEARCH_CLIENT_ID",
+    "NAVER_DEVELOPER_CLIENT_ID",
+  ]);
+  const clientSecret = pickEnv([
+    "NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET",
+    "NAVER_SEARCH_CLIENT_SECRET",
+    "NAVER_DEVELOPER_CLIENT_SECRET",
+  ]);
+  return {
+    clientId: clientId.value,
+    clientSecret: clientSecret.value,
+    sources: {
+      clientId: clientId.source,
+      clientSecret: clientSecret.source,
+    },
+  };
+}
+
+function getNaverMapSdkKeySource() {
+  return pickEnv([
+    "NAVER_CLOUD_MAPS_NCP_KEY_ID",
+    "NAVER_MAP_NCP_KEY_ID",
+    "NAVER_CLOUD_MAPS_CLIENT_ID",
+    "NAVER_MAP_CLIENT_ID",
+    "NAVER_MAPS_CLIENT_ID",
+  ]).source;
 }
 
 function getNaverCredentials() {
@@ -41,7 +94,7 @@ function requireNaverMapCredentials(res) {
   if (!hasCredentials(credentials)) {
     sendJson(res, 500, {
       error: "missing_naver_map_credentials",
-      message: "NAVER_MAP_CLIENT_ID and NAVER_MAP_CLIENT_SECRET must be configured as server environment variables.",
+      message: "NAVER_MAP_CLIENT_ID/NAVER_CLOUD_MAPS_CLIENT_ID and NAVER_MAP_CLIENT_SECRET/NAVER_CLOUD_MAPS_CLIENT_SECRET must be configured as server environment variables.",
     });
     return null;
   }
@@ -109,6 +162,7 @@ module.exports = {
   getNaverCredentials,
   getNaverMapCredentials,
   getNaverMapSdkKeyId,
+  getNaverMapSdkKeySource,
   getNaverSearchCredentials,
   hasCredentials,
   requireNaverCredentials,
