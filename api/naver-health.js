@@ -96,6 +96,38 @@ module.exports = async function handler(req, res) {
       searchClientId: searchCredentials.sources?.clientId || null,
       searchClientSecret: searchCredentials.sources?.clientSecret || null,
     },
+    credentialRouting: {
+      mapSdk: {
+        console: "Naver Cloud Platform Maps",
+        purpose: "Browser Web Dynamic Map SDK",
+        envSource: getNaverMapSdkKeySource(),
+        expectedEnv: "NAVER_CLOUD_MAPS_NCP_KEY_ID",
+      },
+      geocode: {
+        console: "Naver Cloud Platform Maps",
+        purpose: "Maps Geocoding REST API",
+        clientIdEnvSource: mapCredentials.sources?.clientId || null,
+        clientSecretEnvSource: mapCredentials.sources?.clientSecret || null,
+        expectedClientIdEnv: "NAVER_CLOUD_MAPS_CLIENT_ID",
+        expectedClientSecretEnv: "NAVER_CLOUD_MAPS_CLIENT_SECRET",
+      },
+      directions: {
+        console: "Naver Cloud Platform Maps",
+        purpose: "Maps Directions 5 REST API",
+        clientIdEnvSource: mapCredentials.sources?.clientId || null,
+        clientSecretEnvSource: mapCredentials.sources?.clientSecret || null,
+        expectedClientIdEnv: "NAVER_CLOUD_MAPS_CLIENT_ID",
+        expectedClientSecretEnv: "NAVER_CLOUD_MAPS_CLIENT_SECRET",
+      },
+      localSearch: {
+        console: "Naver Developers",
+        purpose: "Search > Local API",
+        clientIdEnvSource: searchCredentials.sources?.clientId || null,
+        clientSecretEnvSource: searchCredentials.sources?.clientSecret || null,
+        expectedClientIdEnv: "NAVER_DEVELOPERS_SEARCH_CLIENT_ID",
+        expectedClientSecretEnv: "NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET",
+      },
+    },
     liveChecked: live,
     mapSdkAuthHint: mapSdkKeyId ? "If the map still fails, check Naver Cloud Web Dynamic Map service URL/domain restrictions." : "Set NAVER_CLOUD_MAPS_NCP_KEY_ID or NAVER_MAP_NCP_KEY_ID.",
   };

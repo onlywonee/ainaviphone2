@@ -16,11 +16,10 @@
 
 | 캡처의 라벨 | Vercel 환경변수 이름 | 쓰는 곳 |
 | --- | --- | --- |
-| `Client ID (X-NCP-APIGW-API-KEY-ID)` | `NAVER_CLOUD_MAPS_CLIENT_ID` | Geocoding/Directions REST API 인증 ID |
+| `Client ID (X-NCP-APIGW-API-KEY-ID)` | `NAVER_CLOUD_MAPS_NCP_KEY_ID` | 지도 SDK 인증 + Geocoding/Directions REST API 인증 ID |
 | `Client Secret (X-NCP-APIGW-API-KEY)` | `NAVER_CLOUD_MAPS_CLIENT_SECRET` | Geocoding/Directions REST API Secret |
-| 같은 `Client ID` 또는 Web Dynamic Map `ncpKeyId` | `NAVER_CLOUD_MAPS_NCP_KEY_ID` | 브라우저 네이버 지도 SDK 로드 |
 
-대부분은 첫 번째 캡처의 `Client ID`를 `NAVER_CLOUD_MAPS_CLIENT_ID`와 `NAVER_CLOUD_MAPS_NCP_KEY_ID`에 **같이** 넣으면 됩니다.
+즉 첫 번째 캡처에서는 **ID 하나 + Secret 하나**, 총 2개만 넣으면 됩니다. `NAVER_CLOUD_MAPS_CLIENT_ID`를 따로 만들 필요 없습니다.
 
 ### 2) 네이버 Developers 화면
 
@@ -35,8 +34,7 @@
 
 코드는 기존에 안내했던 이름도 계속 읽습니다. 즉 아래 이름들도 alias로 동작합니다.
 
-- `NAVER_MAP_NCP_KEY_ID` → `NAVER_CLOUD_MAPS_NCP_KEY_ID`와 같은 의미
-- `NAVER_MAP_CLIENT_ID` → `NAVER_CLOUD_MAPS_CLIENT_ID`와 같은 의미
+- `NAVER_MAP_NCP_KEY_ID` 또는 `NAVER_MAP_CLIENT_ID` → `NAVER_CLOUD_MAPS_NCP_KEY_ID`와 같은 의미
 - `NAVER_MAP_CLIENT_SECRET` → `NAVER_CLOUD_MAPS_CLIENT_SECRET`과 같은 의미
 - `NAVER_SEARCH_CLIENT_ID` → `NAVER_DEVELOPERS_SEARCH_CLIENT_ID`와 같은 의미
 - `NAVER_SEARCH_CLIENT_SECRET` → `NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET`과 같은 의미
@@ -50,8 +48,7 @@ Secret 값들은 절대 `index.html`에 직접 넣지 말고, Vercel/로컬 `.en
 3. 아래 환경 변수를 각각 추가합니다.
 
 ```bash
-NAVER_CLOUD_MAPS_NCP_KEY_ID=첫번째_캡처의_Cloud_Maps_Client_ID_또는_ncpKeyId
-NAVER_CLOUD_MAPS_CLIENT_ID=첫번째_캡처의_Client_ID_X_NCP_APIGW_API_KEY_ID
+NAVER_CLOUD_MAPS_NCP_KEY_ID=첫번째_캡처의_Client_ID_X_NCP_APIGW_API_KEY_ID
 NAVER_CLOUD_MAPS_CLIENT_SECRET=첫번째_캡처의_Client_Secret_X_NCP_APIGW_API_KEY
 NAVER_DEVELOPERS_SEARCH_CLIENT_ID=두번째_캡처의_Naver_Developers_Client_ID
 NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET=두번째_캡처의_Naver_Developers_Client_Secret
@@ -73,9 +70,6 @@ NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET=두번째_캡처의_Naver_Developers_Clien
 
 ```bash
 Name: NAVER_CLOUD_MAPS_NCP_KEY_ID
-Value: 첫번째 캡처의 Cloud Maps Client ID 또는 Web Dynamic Map ncpKeyId
-
-Name: NAVER_CLOUD_MAPS_CLIENT_ID
 Value: 첫번째 캡처의 Client ID (X-NCP-APIGW-API-KEY-ID)
 
 Name: NAVER_CLOUD_MAPS_CLIENT_SECRET
@@ -101,8 +95,7 @@ cp .env.example .env
 `.env` 파일 내용 예시:
 
 ```bash
-NAVER_CLOUD_MAPS_NCP_KEY_ID=여기에_첫번째_캡처의_Cloud_Maps_Client_ID_또는_ncpKeyId
-NAVER_CLOUD_MAPS_CLIENT_ID=여기에_첫번째_캡처의_Client_ID_X_NCP_APIGW_API_KEY_ID
+NAVER_CLOUD_MAPS_NCP_KEY_ID=여기에_첫번째_캡처의_Client_ID_X_NCP_APIGW_API_KEY_ID
 NAVER_CLOUD_MAPS_CLIENT_SECRET=여기에_첫번째_캡처의_Client_Secret_X_NCP_APIGW_API_KEY
 NAVER_DEVELOPERS_SEARCH_CLIENT_ID=여기에_두번째_캡처의_Naver_Developers_Client_ID
 NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET=여기에_두번째_캡처의_Naver_Developers_Client_Secret
@@ -125,7 +118,22 @@ https://내-vercel-도메인.vercel.app/api/naver-health
 https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 ```
 
-`live=1` 결과에서 `configured.mapNcpKeyId`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_CLIENT_ID` 쪽이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID` 쪽이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다. 그래도 브라우저 지도가 안 뜨면 아래의 Web Dynamic Map 도메인 등록 문제일 가능성이 큽니다.
+`live=1` 결과에서 `configured.mapNcpKeyId`, `configured.mapClientSecret`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. `envSources.mapClientId`가 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 쪽이고, `envSources.searchClientId`가 `NAVER_DEVELOPERS_SEARCH_CLIENT_ID` 쪽이면 두 콘솔의 키가 올바른 용도로 연결된 것입니다.
+
+`credentialRouting`도 같이 확인할 수 있습니다. 정상 연결이면 다음처럼 나와야 합니다.
+
+```json
+{
+  "credentialRouting": {
+    "mapSdk": { "console": "Naver Cloud Platform Maps", "envSource": "NAVER_CLOUD_MAPS_NCP_KEY_ID" },
+    "geocode": { "console": "Naver Cloud Platform Maps", "clientIdEnvSource": "NAVER_CLOUD_MAPS_NCP_KEY_ID" },
+    "directions": { "console": "Naver Cloud Platform Maps", "clientIdEnvSource": "NAVER_CLOUD_MAPS_NCP_KEY_ID" },
+    "localSearch": { "console": "Naver Developers", "clientIdEnvSource": "NAVER_DEVELOPERS_SEARCH_CLIENT_ID" }
+  }
+}
+```
+
+그래도 브라우저 지도가 안 뜨면 아래의 Web Dynamic Map 도메인 등록 문제일 가능성이 큽니다.
 
 
 
@@ -143,7 +151,7 @@ https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 1. **잘못된 지도 SDK 키**
    - 네이버 지도 JavaScript SDK는 `ncpKeyId` 파라미터로 인증합니다.
    - Vercel에 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 또는 `NAVER_MAP_NCP_KEY_ID`를 추가하고, 값은 Naver Cloud Platform Maps Application의 Web Dynamic Map `ncpKeyId`를 넣으세요.
-   - REST API용 Client ID와 같은 값이면 `NAVER_CLOUD_MAPS_CLIENT_ID`만 있어도 되지만, 헷갈리면 `NAVER_CLOUD_MAPS_NCP_KEY_ID`를 따로 넣는 쪽이 안전합니다.
+   - 현재 설정은 `NAVER_CLOUD_MAPS_NCP_KEY_ID` 하나를 지도 SDK와 REST API Client ID로 같이 사용합니다.
 
 2. **Web Dynamic Map 서비스 URL/도메인 미등록**
    - Naver Cloud Platform → Maps → Application에서 **Web Dynamic Map**이 활성화되어 있어야 합니다.
@@ -171,9 +179,9 @@ Naver Developers 애플리케이션에서는 아래 API 사용 권한을 켜 주
 
 ```txt
 index.html
-  ├─ /api/naver-maps.js  → NAVER_CLOUD_MAPS_NCP_KEY_ID 또는 NAVER_CLOUD_MAPS_CLIENT_ID로 네이버 지도 JavaScript SDK 로드
+  ├─ /api/naver-maps.js  → NAVER_CLOUD_MAPS_NCP_KEY_ID로 네이버 지도 JavaScript SDK 로드
   ├─ /api/geocode        → NAVER_DEVELOPERS_SEARCH_*로 지역 검색 후 NAVER_CLOUD_MAPS_*로 Geocoding 호출
-  └─ /api/directions     → NAVER_CLOUD_MAPS_CLIENT_ID + NAVER_CLOUD_MAPS_CLIENT_SECRET으로 Naver Directions 5 API 호출
+  └─ /api/directions     → NAVER_CLOUD_MAPS_NCP_KEY_ID + NAVER_CLOUD_MAPS_CLIENT_SECRET으로 Naver Directions 5 API 호출
 ```
 
 `NAVER_CLOUD_MAPS_CLIENT_SECRET`과 `NAVER_DEVELOPERS_SEARCH_CLIENT_SECRET`은 위 서버리스 API 안에서만 사용하고, 브라우저 HTML/JS에는 직접 노출하지 않습니다.
