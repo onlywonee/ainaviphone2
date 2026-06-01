@@ -1,6 +1,7 @@
-const { tagDictionary, tagCategoryMeta } = typeof require === "function"
-  ? require("./tagDictionary")
-  : window.RouteTagDictionary;
+function createRouteTagMatcher() {
+  const { tagDictionary, tagCategoryMeta } = typeof require === "function"
+    ? require("./tagDictionary")
+    : window.RouteTagDictionary;
 
 function normalizeVariant(text = "") {
   return String(text)
@@ -116,10 +117,13 @@ function matchRouteSegmentTags(text = "") {
   };
 }
 
+  return { normalizeText, matchRouteSegmentTags };
+}
+
 if (typeof module !== "undefined") {
-  module.exports = { normalizeText, matchRouteSegmentTags };
+  module.exports = createRouteTagMatcher();
 }
 
 if (typeof window !== "undefined") {
-  window.RouteTagMatcher = { normalizeText, matchRouteSegmentTags };
+  window.RouteTagMatcher = createRouteTagMatcher();
 }
