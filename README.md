@@ -110,6 +110,14 @@ https://내-vercel-도메인.vercel.app/api/naver-health?live=1
 `live=1` 결과에서 `configured.mapNcpKeyId`, `geocode.ok`, `directions.ok`, `localSearch.ok`가 `true`면 지도/경로/검색 키가 서버에서 정상으로 읽히고 네이버 API 호출도 성공한 것입니다. 그래도 브라우저 지도가 안 뜨면 아래의 Web Dynamic Map 도메인 등록 문제일 가능성이 큽니다.
 
 
+
+## 프론트 콘솔 에러별 의미
+
+- `SyntaxError: Can't create duplicate variable: 'tagCategoryMeta'`
+  - 같은 태그 사전 스크립트가 브라우저에서 두 번 평가될 때 생기는 중복 선언 에러였습니다. 현재는 태그 사전/매처를 factory 방식으로 바꿔 중복 로드되어도 전역 `const`가 다시 선언되지 않게 했습니다.
+- `TypeError: null is not an object (evaluating 'new naver.maps.Circle')`
+  - 네이버 지도 SDK가 로드됐지만 `naver.maps.Circle` 생성자가 제공되지 않거나 인증 실패 후 일부 객체가 비어 있을 때 생깁니다. 현재는 Circle이 없으면 Marker 기반 원형 표시로 fallback 하도록 했습니다. 그래도 지도가 비어 있으면 `NAVER_MAP_NCP_KEY_ID`와 Web Dynamic Map 도메인 등록을 먼저 확인하세요.
+
 ## `validatev3` / `v3/auth` 인증 에러가 보일 때
 
 브라우저 콘솔에 `oapi.map.naver.com/v1/validatev3` 또는 `oapi.map.naver.com/v3/auth`가 보이면서 지도가 안 뜨면 대부분 아래 둘 중 하나입니다.

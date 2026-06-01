@@ -1,4 +1,5 @@
-const tagDictionary = {
+function createRouteTagDictionary() {
+  const tagDictionary = {
   traffic_positive: ["안 막힘", "안막힘", "뻥 뚫림", "뻥뚫림", "잘 뚫림", "차 없음", "차 별로 없음", "차 적음", "한산함", "원활함", "시원하게 감", "쭉 감", "쭉쭉 감", "빠름", "생각보다 빨라", "정체 없음", "신호 적음", "신호 별로 없음", "속도 잘 남", "흐름 좋음", "교통 좋음", "길 잘 빠짐", "막히지 않음"],
   traffic_negative: ["막힘", "막혀", "개막힘", "너무 막힘", "정체", "교통체증", "차 많음", "차 너무 많음", "답답함", "신호 많음", "신호 너무 많음", "가다 서다", "느림", "오래 걸림", "시간 오래 걸림", "흐름 안 좋음", "차가 안 빠짐", "길이 안 빠짐", "상습정체", "출퇴근 지옥", "버벅임", "밀림", "계속 섬", "빨리 못 감", "택시 많음", "버스 많음"],
   driving_easy: ["운전 편함", "운전하기 편함", "길 쉬움", "쉬운 길", "직진 위주", "차선 단순", "초보도 가능", "초보운전 괜찮음", "복잡하지 않음", "편하게 감", "부담 없음", "길 찾기 쉬움", "진입 쉬움", "나가기 쉬움", "차선 변경 쉬움", "좌회전 쉬움", "유턴 쉬움", "도로 넓음", "넓은 길", "주행 편함", "스트레스 없음"],
@@ -21,7 +22,7 @@ const tagDictionary = {
   preference_negative: ["싫다", "싫어", "별로", "비추", "마음에 안 듦", "맘에 안 듦", "불만족", "다시 안 감", "다시 안 오고 싶음", "피하고 싶음", "안 가고 싶음", "짜증남", "최악", "안 좋음", "불호"],
 };
 
-const tagCategoryMeta = {
+  const tagCategoryMeta = {
   traffic_positive: { label: "교통 원활", sentiment: "positive" },
   traffic_negative: { label: "교통 불편", sentiment: "negative" },
   driving_easy: { label: "운전 쉬움", sentiment: "positive" },
@@ -44,10 +45,13 @@ const tagCategoryMeta = {
   preference_negative: { label: "비선호", sentiment: "negative" },
 };
 
+  return { tagDictionary, tagCategoryMeta };
+}
+
 if (typeof module !== "undefined") {
-  module.exports = { tagDictionary, tagCategoryMeta };
+  module.exports = createRouteTagDictionary();
 }
 
 if (typeof window !== "undefined") {
-  window.RouteTagDictionary = { tagDictionary, tagCategoryMeta };
+  window.RouteTagDictionary = createRouteTagDictionary();
 }

@@ -1731,16 +1731,42 @@
       }
 
       function createCircle(center, options = {}) {
-        return new naver.maps.Circle({
-          map,
-          center: toNaverLatLng(center),
-          radius: options.radius || 30,
-          strokeColor: options.color || "#0a66ff",
-          strokeWeight: options.weight || 1,
-          strokeOpacity: options.opacity ?? 1,
-          fillColor: options.fillColor || options.color || "#0a66ff",
-          fillOpacity: options.fillOpacity ?? 0.15,
-        });
+        const radius = options.radius || 30;
+        if (typeof naver.maps.Circle === "function") {
+          return new naver.maps.Circle({
+            map,
+            center: toNaverLatLng(center),
+            radius,
+            strokeColor: options.color || "#0a66ff",
+            strokeWeight: options.weight || 1,
+            strokeOpacity: options.opacity ?? 1,
+            fillColor: options.fillColor || options.color || "#0a66ff",
+            fillOpacity: options.fillOpacity ?? 0.15,
+          });
+        }
+
+        if (typeof naver.maps.Marker === "function") {
+          const pixelRadius = Math.max(8, Math.min(Math.round(radius / 2), 80));
+          const color = options.fillColor || options.color || "#0a66ff";
+          const marker = new naver.maps.Marker({
+            map,
+            position: toNaverLatLng(center),
+            icon: {
+              content: `<div style="width:${pixelRadius * 2}px;height:${pixelRadius * 2}px;border:${options.weight || 1}px solid ${options.color || color};border-radius:999px;background:${color};opacity:${options.fillOpacity ?? 0.25};box-shadow:0 0 0 2px rgba(255,255,255,0.65);"></div>`,
+              size: new naver.maps.Size(pixelRadius * 2, pixelRadius * 2),
+              anchor: new naver.maps.Point(pixelRadius, pixelRadius),
+            },
+          });
+          marker.setCenter = (latlng) => marker.setPosition(toNaverLatLng(latlng));
+          marker.setRadius = () => {};
+          return marker;
+        }
+
+        return {
+          setMap() {},
+          setCenter() {},
+          setRadius() {},
+        };
       }
 
       function createHtmlMarker(latlng, html, size = [26, 26], anchor = [13, 24]) {
@@ -1756,7 +1782,11 @@
       }
 
       function setCircleLatLng(circle, latlng) {
-        circle.setCenter(toNaverLatLng(latlng));
+        if (typeof circle?.setCenter === "function") {
+          circle.setCenter(toNaverLatLng(latlng));
+        } else if (typeof circle?.setPosition === "function") {
+          circle.setPosition(toNaverLatLng(latlng));
+        }
       }
 
       function distanceMeters(a, b) {
