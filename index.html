@@ -2358,9 +2358,34 @@
         doneText.textContent = summaryText.textContent;
       }
 
+      function normalizeTagKeyword(keyword) {
+        return String(keyword || "")
+          .replace(/^#+/, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function buildIntentKeywordLabel(intent) {
+        const keywordCandidates = [
+          ...(intent?.matchedTags || []).map((tag) => tag.label || tag.matchedKeyword),
+          ...(intent?.tags || []),
+        ];
+        const keywords = [...new Set(keywordCandidates.map(normalizeTagKeyword).filter(Boolean))];
+
+        if (!keywords.length && intent?.condition && intent.condition !== "상시") {
+          keywords.push(...intent.condition.split(/[·,]/).map(normalizeTagKeyword).filter(Boolean));
+        }
+
+        if (!keywords.length) {
+          keywords.push(intent?.preferenceType === "prefer" ? "선호 구간" : "회피 구간");
+        }
+
+        return keywords.slice(0, 3).join(" · ");
+      }
+
       function addTaggedMarker(midpoint) {
         const summary = state.activeIntent
-          ? `${state.activeIntent.destination} · ${state.activeIntent.delay}분 기준 · ${state.tagMode === "prefer" ? "선호" : "회피"}`
+          ? `${state.activeIntent.destination} · ${buildIntentKeywordLabel(state.activeIntent)} · ${state.activeIntent.preferenceType === "prefer" ? "선호" : "회피"}`
           : "저장된 태깅 규칙";
         const marker = L.marker(midpoint, {
           icon: L.divIcon({
