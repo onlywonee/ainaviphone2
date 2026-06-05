@@ -41,6 +41,7 @@
         --route-green: #21c16b;
         --route-pink: #ef5da8;
         --danger: #ff5b5b;
+        --map-tools-bottom: calc(env(safe-area-inset-bottom) + 286px);
       }
 
       * {
@@ -319,7 +320,7 @@
         position: absolute;
         left: 14px;
         right: 14px;
-        bottom: calc(env(safe-area-inset-bottom) + 286px);
+        bottom: var(--map-tools-bottom);
         z-index: 24;
         display: flex;
         align-items: center;
@@ -331,7 +332,7 @@
       .floating-right-tools {
         position: absolute;
         right: 16px;
-        bottom: calc(env(safe-area-inset-bottom) + 292px);
+        bottom: calc(var(--map-tools-bottom) + 6px);
         z-index: 24;
         display: grid;
         gap: 12px;
@@ -996,7 +997,7 @@
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        bottom: calc(env(safe-area-inset-bottom) + 280px);
+        bottom: calc(var(--map-tools-bottom) + 68px);
         z-index: 50;
         background: rgba(24, 28, 36, 0.9);
         color: #fff;
@@ -1218,13 +1219,11 @@
         .floating-left-tools {
           left: 12px;
           right: 12px;
-          bottom: calc(env(safe-area-inset-bottom) + 224px);
           gap: 8px;
         }
 
         .floating-right-tools {
           right: 16px;
-          bottom: calc(env(safe-area-inset-bottom) + 232px);
         }
 
         .tool-fab {
@@ -1282,7 +1281,7 @@
         }
 
         .helper-toast {
-          bottom: calc(env(safe-area-inset-bottom) + 230px);
+          bottom: calc(var(--map-tools-bottom) + 60px);
           font-size: 13px;
           padding: 8px 12px;
         }
@@ -1764,6 +1763,24 @@
       let accuracyCircle;
       let destinationMarker;
       let toastTimer;
+      let floatingToolFrame;
+
+      function updateFloatingToolPosition() {
+        cancelAnimationFrame(floatingToolFrame);
+        floatingToolFrame = requestAnimationFrame(() => {
+          const appHeight = app.getBoundingClientRect().height || window.innerHeight;
+          const bottomAreaHeight = bottomArea && !bottomArea.classList.contains("hidden")
+            ? bottomArea.getBoundingClientRect().height
+            : 0;
+          const narrowScreen = window.matchMedia("(max-width: 390px), (max-height: 740px)").matches;
+          const bottomNavHeight = bottomNav?.getBoundingClientRect().height || 0;
+          const fallbackBottom = bottomNavHeight + (narrowScreen ? 164 : 226);
+          const desiredBottom = bottomAreaHeight ? bottomAreaHeight + 14 : fallbackBottom;
+          const maxBottom = Math.max(fallbackBottom, appHeight - (narrowScreen ? 178 : 210));
+          const nextBottom = Math.round(Math.min(desiredBottom, maxBottom));
+          document.documentElement.style.setProperty("--map-tools-bottom", `${nextBottom}px`);
+        });
+      }
 
       function setRouteStage(hasRoute) {
         searchStateHint.textContent = hasRoute
@@ -1786,6 +1803,7 @@
           simpleSearchInput.value = "";
         }
         if (!hasRoute) tagListSheet.classList.add("hidden");
+        updateFloatingToolPosition();
       }
 
       function renderTagList() {
@@ -1840,6 +1858,8 @@
         aiTagBtn.setAttribute("aria-pressed", brushActive ? "true" : "false");
         brushLayer.classList.toggle("hidden", !brushActive);
         brushLayer.classList.toggle("active", brushActive);
+        updateFloatingToolPosition();
+
         if (brushActive) {
           map.touchZoom.enable();
           map.dragging.enable();
@@ -2758,6 +2778,7 @@
 
       function setSheetExpanded(expanded) {
         app.classList.toggle("sheet-expanded", expanded);
+        updateFloatingToolPosition();
       }
 
       function onSheetDragStart(event) {
@@ -2802,6 +2823,12 @@
         sheetHandleEl.addEventListener("pointerup", onSheetDragEnd);
         sheetHandleEl.addEventListener("pointercancel", onSheetDragEnd);
       }
+
+      if (typeof ResizeObserver === "function" && bottomArea) {
+        new ResizeObserver(updateFloatingToolPosition).observe(bottomArea);
+      }
+      window.addEventListener("resize", updateFloatingToolPosition);
+      window.addEventListener("orientationchange", updateFloatingToolPosition);
 
       setUI(UI_STATE.ROUTE);
       syncSimpleSearchActions();
