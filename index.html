@@ -1032,6 +1032,7 @@
         font-weight: 700;
         white-space: nowrap;
         box-shadow: 0 10px 22px rgba(33, 56, 125, 0.32);
+        pointer-events: auto;
       }
 
       .ai-intro-bubble::after {
@@ -1050,10 +1051,17 @@
         border: none;
         background: transparent;
         color: rgba(255, 255, 255, 0.9);
+        width: 22px;
+        height: 22px;
         font-size: 21px;
         line-height: 1;
         padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
+        pointer-events: auto;
+        touch-action: manipulation;
       }
 
       .hidden { display: none !important; }
