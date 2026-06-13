@@ -970,7 +970,7 @@
 
       
       #state-confirm {
-        max-height: calc(66vh - 20px);
+        max-height: 100%;
         display: none;
         flex-direction: column;
         overflow: hidden;
@@ -1628,7 +1628,6 @@
               <div class="dual-actions confirm-actions">
                 <button class="inline-btn" id="confirmBackBtn">수정하기</button>
                 <button class="primary-btn" id="saveTagBtn">확인</button>
-                <button class="secondary-btn" id="saveAndStartGuideBtn">기억하고 안내 시작</button>
               </div>
             </div>
 
@@ -2669,7 +2668,7 @@
         setUI(UI_STATE.INPUT);
       });
 
-      function saveCurrentTag({ startGuide = false } = {}) {
+      function saveCurrentTag() {
         if (!state.activeIntent || !state.selectedCenter) {
           showToast("먼저 구간과 태그 내용을 확인해 주세요.");
           return false;
@@ -2694,10 +2693,6 @@
 
       document.getElementById("saveTagBtn").addEventListener("click", () => {
         saveCurrentTag();
-      });
-
-      saveAndStartGuideBtn.addEventListener("click", () => {
-        saveCurrentTag({ startGuide: true });
       });
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
