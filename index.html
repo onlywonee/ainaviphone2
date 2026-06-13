@@ -109,6 +109,7 @@
       .map-dim.active {
         background: rgba(10, 12, 18, 0.24);
         backdrop-filter: blur(2px);
+        pointer-events: auto;
       }
 
       .top-wrap {
@@ -550,6 +551,10 @@
         will-change: transform;
       }
 
+      #app.sheet-closing .sheet-card {
+        transform: translateY(105%);
+      }
+
       .sheet-dismiss-btn {
         position: absolute;
         top: 16px;
@@ -957,7 +962,7 @@
 
       
       #state-confirm {
-        max-height: calc(66vh - 20px);
+        max-height: 100%;
         display: none;
         flex-direction: column;
         overflow: hidden;
@@ -1612,9 +1617,9 @@
                   <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
                 </div>
               </div>
-              <div class="dual-actions">
+              <div class="dual-actions confirm-actions">
                 <button class="inline-btn" id="confirmBackBtn">수정하기</button>
-                <button class="primary-btn" id="saveTagBtn">기억하기</button>
+                <button class="primary-btn" id="saveTagBtn">확인</button>
               </div>
             </div>
 
@@ -2166,9 +2171,13 @@
         document.getElementById("quickAvoidBtn")?.classList.remove("active");
         document.getElementById("quickPreferBtn")?.classList.remove("active");
         conditionChipBtns.forEach((btn) => btn.classList.remove("active"));
-        resetSelection(true);
-        setUI(UI_STATE.ROUTE);
-        showToast("선택한 구간을 닫았어요. 다른 구간을 다시 선택할 수 있어요.", 1800);
+        app.classList.add("sheet-closing");
+        window.setTimeout(() => {
+          resetSelection(true);
+          setUI(UI_STATE.ROUTE);
+          app.classList.remove("sheet-closing");
+          showToast("선택한 구간을 닫았어요. 다른 구간을 다시 선택할 수 있어요.", 1800);
+        }, 220);
       }
 
       function startBrush(event) {
@@ -2650,15 +2659,20 @@
         setUI(UI_STATE.INPUT);
       });
 
-      document.getElementById("saveTagBtn").addEventListener("click", () => {
+      function saveCurrentTag() {
         if (!state.activeIntent || !state.selectedCenter) {
           showToast("먼저 구간과 태그 내용을 확인해 주세요.");
-          return;
+          return false;
         }
         const midpoint = state.selectedCenter;
         addTaggedMarker(midpoint);
         renderTagList();
         setUI(UI_STATE.DONE);
+        return true;
+      }
+
+      document.getElementById("saveTagBtn").addEventListener("click", () => {
+        saveCurrentTag();
       });
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
@@ -2761,6 +2775,9 @@
         aiIntroBubble.classList.add("hidden");
       });
       sheetDismissBtn.addEventListener("click", dismissTaggingPanel);
+      mapDim.addEventListener("click", () => {
+        if (state.currentUI !== UI_STATE.ROUTE) dismissTaggingPanel();
+      });
       myTagNavBtn.addEventListener("click", () => {
         if (!state.baseRoute?.length) {
           showToast("먼저 목적지를 검색해 주세요.");
