@@ -109,6 +109,7 @@
       .map-dim.active {
         background: rgba(10, 12, 18, 0.24);
         backdrop-filter: blur(2px);
+        pointer-events: auto;
       }
 
       .top-wrap {
@@ -550,6 +551,10 @@
         will-change: transform;
       }
 
+      #app.sheet-closing .sheet-card {
+        transform: translateY(105%);
+      }
+
       .sheet-dismiss-btn {
         position: absolute;
         top: 16px;
@@ -957,7 +962,7 @@
 
       
       #state-confirm {
-        max-height: calc(66vh - 20px);
+        max-height: 100%;
         display: none;
         flex-direction: column;
         overflow: hidden;
@@ -975,12 +980,17 @@
         padding-bottom: 8px;
       }
 
-      #state-confirm .dual-actions {
-        position: sticky;
-        bottom: 0;
-        margin-top: 8px;
-        padding: 10px 0 calc(env(safe-area-inset-bottom) + 6px);
-        background: linear-gradient(to top, rgba(251, 252, 254, 0.99) 76%, rgba(251, 252, 254, 0));
+      #state-confirm .confirm-actions {
+        flex: 0 0 auto;
+        grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+        margin: 8px 0 14px;
+      }
+
+      #state-confirm .confirm-actions .primary-btn,
+      #state-confirm .confirm-actions .secondary-btn {
+        min-height: 54px;
+        font-size: 16px;
+        white-space: nowrap;
       }
 .completion-card {
         text-align: center;
@@ -1592,6 +1602,10 @@
 
             <div class="state-panel" id="state-confirm">
               <h3 class="sheet-title">이렇게 기억할게요</h3>
+              <div class="dual-actions confirm-actions" aria-label="기억 확인 동작">
+                <button class="primary-btn" id="saveTagBtn">확인</button>
+                <button class="secondary-btn" id="saveAndStartGuideBtn">기억하고 안내 시작</button>
+              </div>
               <div class="confirm-scroll">
                 <div class="guide-card">
                   <strong style="display:block; margin-bottom:6px; font-size:16px; color:#22262f;">요약된 기억</strong>
@@ -1614,7 +1628,6 @@
               </div>
               <div class="dual-actions">
                 <button class="inline-btn" id="confirmBackBtn">수정하기</button>
-                <button class="primary-btn" id="saveTagBtn">기억하기</button>
               </div>
             </div>
 
@@ -1753,6 +1766,7 @@
       const aiIntroBubble = document.getElementById("aiIntroBubble");
       const aiIntroCloseBtn = document.getElementById("aiIntroCloseBtn");
       const sheetDismissBtn = document.getElementById("sheetDismissBtn");
+      const saveAndStartGuideBtn = document.getElementById("saveAndStartGuideBtn");
 
       const routeTimeEls = Array.from(document.querySelectorAll(".route-time"));
       const routeMetaEls = Array.from(document.querySelectorAll(".route-meta"));
@@ -2166,9 +2180,13 @@
         document.getElementById("quickAvoidBtn")?.classList.remove("active");
         document.getElementById("quickPreferBtn")?.classList.remove("active");
         conditionChipBtns.forEach((btn) => btn.classList.remove("active"));
-        resetSelection(true);
-        setUI(UI_STATE.ROUTE);
-        showToast("선택한 구간을 닫았어요. 다른 구간을 다시 선택할 수 있어요.", 1800);
+        app.classList.add("sheet-closing");
+        window.setTimeout(() => {
+          resetSelection(true);
+          setUI(UI_STATE.ROUTE);
+          app.classList.remove("sheet-closing");
+          showToast("선택한 구간을 닫았어요. 다른 구간을 다시 선택할 수 있어요.", 1800);
+        }, 220);
       }
 
       function startBrush(event) {
@@ -2650,15 +2668,35 @@
         setUI(UI_STATE.INPUT);
       });
 
-      document.getElementById("saveTagBtn").addEventListener("click", () => {
+      function saveCurrentTag({ startGuide = false } = {}) {
         if (!state.activeIntent || !state.selectedCenter) {
           showToast("먼저 구간과 태그 내용을 확인해 주세요.");
-          return;
+          return false;
         }
         const midpoint = state.selectedCenter;
         addTaggedMarker(midpoint);
         renderTagList();
+
+        if (startGuide) {
+          resetSelection();
+          map.dragging.enable();
+          speechText.value = "";
+          state.activeIntent = null;
+          setUI(UI_STATE.ROUTE);
+          showToast("기억한 조건을 반영해 안내를 시작합니다.", 2400);
+          return true;
+        }
+
         setUI(UI_STATE.DONE);
+        return true;
+      }
+
+      document.getElementById("saveTagBtn").addEventListener("click", () => {
+        saveCurrentTag();
+      });
+
+      saveAndStartGuideBtn.addEventListener("click", () => {
+        saveCurrentTag({ startGuide: true });
       });
 
       document.getElementById("stayRouteBtn").addEventListener("click", () => {
@@ -2761,6 +2799,9 @@
         aiIntroBubble.classList.add("hidden");
       });
       sheetDismissBtn.addEventListener("click", dismissTaggingPanel);
+      mapDim.addEventListener("click", () => {
+        if (state.currentUI !== UI_STATE.ROUTE) dismissTaggingPanel();
+      });
       myTagNavBtn.addEventListener("click", () => {
         if (!state.baseRoute?.length) {
           showToast("먼저 목적지를 검색해 주세요.");
