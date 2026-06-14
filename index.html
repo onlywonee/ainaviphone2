@@ -742,6 +742,14 @@
         padding-top: 10px;
       }
 
+      #state-confirm .confirm-actions {
+        grid-template-columns: 0.82fr 1fr;
+      }
+
+      #state-confirm .confirm-actions .secondary-btn {
+        grid-column: 1 / -1;
+      }
+
       .sheet-title {
         font-size: 22px;
         line-height: 1.34;
@@ -1626,7 +1634,7 @@
                   <div id="ruleDetailText" style="font-size:15px; line-height:1.56; color:#5f6673;">입력 원문: ""</div>
                 </div>
               </div>
-              <div class="dual-actions">
+              <div class="dual-actions confirm-actions">
                 <button class="inline-btn" id="confirmBackBtn">수정하기</button>
               </div>
             </div>
